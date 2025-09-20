@@ -28,7 +28,9 @@
             overflow: hidden; /* Hides the scrollbar */
             /* Sync padding for perfect cursor alignment */
             padding: 1rem;
-            padding-left: 2.5rem; 
+            padding-left: 2.5rem;
+            /* Create a clip path to exclude the prefix area from mouse events */
+            clip-path: inset(0 0 0 2.5rem);
         }
 
         /* The visual-editor div sits behind the textarea */
@@ -53,6 +55,8 @@
             font-weight: bold;
             color: #4b5563; /* Subtle gray color */
             font-weight: bold;
+            cursor: pointer;
+            pointer-events: auto;
         }
 
         /* Styles for the overage text highlighting */
