@@ -71,7 +71,7 @@
     <div class="w-full max-w-5xl">
         <h1 class="text-3xl font-bold mb-4 text-center">Threadweaver</h1>
         <p class="text-sm text-gray-400 text-center mb-6">Write your post below. Use three blank lines to create a new post chunk. Characters over the limit will be highlighted in red.</p>
-        
+
         <!-- Main Editor Area -->
         <div class="w-full bg-slate-800 rounded-lg shadow-lg p-6 mb-8">
             <div class="flex justify-between items-center mb-2">
@@ -112,8 +112,25 @@
          */
         function handlePrefixClick(chunkNumber) {
             console.log(`Clicked on prefix for chunk ${chunkNumber}`);
+
+            // Find the clicked prefix element
+            const prefixElements = visualEditor.querySelectorAll('.post-prefix');
+            const clickedPrefix = prefixElements[chunkNumber - 1];
+
+            if (clickedPrefix) {
+                // Store the original text
+                const originalText = clickedPrefix.textContent;
+
+                // Change to checkmark
+                clickedPrefix.textContent = '✓ ';
+
+                // Change back after 2 seconds
+                setTimeout(() => {
+                    clickedPrefix.textContent = originalText;
+                }, 1000);
+            }
         }
-        
+
         /**
          * Checks a single chunk of text for its character count and overage, and provides formatting details.
          * This function now uses the correct BlueSky character counting algorithm.
@@ -124,7 +141,7 @@
             let length = 0;
             const textParts = [];
             let lastIndex = 0;
-            
+
             // Combine all matches into a single sorted array
             const matches = [
                 ...Array.from(chunk.matchAll(urlRegex), m => ({ text: m[0], type: 'url', index: m.index })),
@@ -143,10 +160,10 @@
                 const specialLength = match.type === 'url' ? 20 : 15;
                 length += specialLength;
                 textParts.push({ text: match.text, type: match.type });
-                
+
                 lastIndex = match.index + match.text.length;
             });
-            
+
             // Add any remaining text after the last match
             if (lastIndex < chunk.length) {
                 const text = chunk.substring(lastIndex);
@@ -162,7 +179,7 @@
             let overageText = '';
             textParts.forEach(part => {
                 const partLength = part.type === 'url' ? 20 : (part.type === 'mention' ? 15 : part.text.length);
-                
+
                 if (currentLength + partLength <= CHARACTER_LIMIT) {
                     safeText += part.text;
                     currentLength += partLength;
@@ -174,7 +191,7 @@
                     currentLength += safeChars.length;
                 }
             });
-            
+
             return { length, isOverage, safeText, overageText };
         }
 
@@ -199,20 +216,20 @@
         copyButton.addEventListener('click', () => {
             const text = editor.value;
             const chunks = text.split(/\n\n\n/);
-            
+
             if (chunks.length === 0 || editor.value.trim() === '') {
                 return;
             }
 
             const postsToCopy = chunks.map((chunk, index) => `${index + 1}/ ${chunk}`);
             const fullText = postsToCopy.join('\n\n');
-            
+
             // Create a temporary textarea to hold the text
             const tempTextArea = document.createElement('textarea');
             tempTextArea.value = fullText;
             document.body.appendChild(tempTextArea);
             tempTextArea.select();
-            
+
             try {
                 document.execCommand('copy');
                 const originalText = copyButton.textContent;
@@ -271,7 +288,7 @@
 
             // Sync scroll positions
             visualEditor.scrollTop = editorScrollTop;
-            
+
             // Auto-resize the editor and visual editor to fit content
             editor.style.height = 'auto';
             const newHeight = editor.scrollHeight;
@@ -290,7 +307,7 @@
                 charCounter.classList.remove('text-red-400');
                 charCounter.classList.add('text-gray-400');
             }
-            
+
             copyButton.disabled = editor.value.trim() === '';
         }
     </script>
