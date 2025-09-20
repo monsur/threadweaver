@@ -111,8 +111,6 @@
          * @param {number} chunkNumber - The chunk number that was clicked
          */
         function handlePrefixClick(chunkNumber) {
-            console.log(`Clicked on prefix for chunk ${chunkNumber}`);
-
             // Get the specific chunk text
             const text = editor.value;
             const chunks = text.split(/\n\n\n/);
@@ -124,7 +122,7 @@
 
                 // Copy to clipboard
                 navigator.clipboard.writeText(textToCopy).then(() => {
-                    console.log(`Copied chunk ${chunkNumber} to clipboard`);
+                    // Successfully copied
                 }).catch(() => {
                     // Fallback for older browsers
                     const tempTextArea = document.createElement('textarea');
@@ -133,7 +131,6 @@
                     tempTextArea.select();
                     document.execCommand('copy');
                     document.body.removeChild(tempTextArea);
-                    console.log(`Copied chunk ${chunkNumber} to clipboard (fallback)`);
                 });
 
                 // Find the clicked prefix element for visual feedback
