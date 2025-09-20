@@ -105,6 +105,14 @@
         // Regex patterns for URL and mention detection
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         const mentionRegex = /(@[a-zA-Z0-9.]+)/g;
+
+        /**
+         * Handles clicking on a post prefix
+         * @param {number} chunkNumber - The chunk number that was clicked
+         */
+        function handlePrefixClick(chunkNumber) {
+            console.log(`Clicked on prefix for chunk ${chunkNumber}`);
+        }
         
         /**
          * Checks a single chunk of text for its character count and overage, and provides formatting details.
@@ -254,7 +262,13 @@
                 }
             });
             visualEditor.innerHTML = newVisualEditorHTML;
-            
+
+            // Add click event listeners to all prefix elements
+            const prefixElements = visualEditor.querySelectorAll('.post-prefix');
+            prefixElements.forEach((prefixElement, index) => {
+                prefixElement.addEventListener('click', () => handlePrefixClick(index + 1));
+            });
+
             // Sync scroll positions
             visualEditor.scrollTop = editorScrollTop;
             
