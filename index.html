@@ -113,21 +113,45 @@
         function handlePrefixClick(chunkNumber) {
             console.log(`Clicked on prefix for chunk ${chunkNumber}`);
 
-            // Find the clicked prefix element
-            const prefixElements = visualEditor.querySelectorAll('.post-prefix');
-            const clickedPrefix = prefixElements[chunkNumber - 1];
+            // Get the specific chunk text
+            const text = editor.value;
+            const chunks = text.split(/\n\n\n/);
+            const chunkText = chunks[chunkNumber - 1];
 
-            if (clickedPrefix) {
-                // Store the original text
-                const originalText = clickedPrefix.textContent;
+            if (chunkText !== undefined) {
+                // Create the text to copy (chunk with prefix)
+                const textToCopy = `${chunkNumber}/ ${chunkText}`;
 
-                // Change to checkmark
-                clickedPrefix.textContent = '✓ ';
+                // Copy to clipboard
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    console.log(`Copied chunk ${chunkNumber} to clipboard`);
+                }).catch(() => {
+                    // Fallback for older browsers
+                    const tempTextArea = document.createElement('textarea');
+                    tempTextArea.value = textToCopy;
+                    document.body.appendChild(tempTextArea);
+                    tempTextArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempTextArea);
+                    console.log(`Copied chunk ${chunkNumber} to clipboard (fallback)`);
+                });
 
-                // Change back after 2 seconds
-                setTimeout(() => {
-                    clickedPrefix.textContent = originalText;
-                }, 1000);
+                // Find the clicked prefix element for visual feedback
+                const prefixElements = visualEditor.querySelectorAll('.post-prefix');
+                const clickedPrefix = prefixElements[chunkNumber - 1];
+
+                if (clickedPrefix) {
+                    // Store the original text
+                    const originalText = clickedPrefix.textContent;
+
+                    // Change to checkmark
+                    clickedPrefix.textContent = '✓ ';
+
+                    // Change back after 1 second
+                    setTimeout(() => {
+                        clickedPrefix.textContent = originalText;
+                    }, 1000);
+                }
             }
         }
 
