@@ -85,7 +85,10 @@
                 <div id="visual-editor" class="w-full h-full text-lg"></div>
             </div>
 
-            <div class="flex justify-end mt-4">
+            <div class="flex justify-between mt-4">
+                <button id="clear-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Clear
+                </button>
                 <button id="copy-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed">
                     Copy All Posts
                 </button>
@@ -99,6 +102,7 @@
         const charCounter = document.getElementById('char-counter');
         const chunkInfo = document.getElementById('chunk-info');
         const copyButton = document.getElementById('copy-button');
+        const clearButton = document.getElementById('clear-button');
 
         const CHARACTER_LIMIT = 300;
 
@@ -265,6 +269,12 @@
             } finally {
                 document.body.removeChild(tempTextArea);
             }
+        });
+
+        clearButton.addEventListener('click', () => {
+            editor.value = '';
+            localStorage.removeItem('bluesky-post-content');
+            updateContent();
         });
 
         function updateContent() {
