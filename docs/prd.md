@@ -28,7 +28,7 @@ The goal of this upgrade is to make Threadweaver a proper authoring environment 
 ## Key User Scenarios
 
 ### 1. New thread from notes
-The user has been collecting thoughts on a topic — links, half-sentences, quotes — and wants to turn them into a thread. They open Threadweaver, create a new draft, drop their notes into the notes panel, and hit "Generate draft." If the notes contain URLs, the app fetches and synthesizes the content at each link before sending everything to the AI. The AI produces a structured set of posts. The user then edits them with AI assistance until each post is tight and on-point.
+The user has been collecting thoughts on a topic — rough ideas, quotes, bullet points — and wants to turn them into a thread. They open Threadweaver, create a new draft, drop their notes into the notes panel, and hit "Generate draft." The AI turns the raw notes into a coherent set of posts. The user then edits them with AI assistance until each post is tight and on-point.
 
 ### 2. Editing an existing draft
 The user has a draft they've been working on across multiple sessions. They open Threadweaver, see their saved drafts, pick the one they want, and continue editing. They work through each post with the AI editor — paste a post, get a revision and character count, accept or revise, move to the next.
@@ -92,7 +92,7 @@ Notes are plain text. The panel is collapsible. There is no character limit.
 
 ### 4. AI Draft Generation
 
-The user clicks "Generate draft from notes." Before calling the AI, the backend scans the notes for URLs and fetches the content at each link, synthesizing the page text into a summary. The notes plus any fetched content are then sent to the Claude API, which returns a structured first draft — a set of posts, each within the 300-character limit, following the same Threadweaver character-counting rules (URLs = 20, mentions = 15).
+The user clicks "Generate draft from notes." The backend sends the raw notes to the Claude API, which returns a structured first draft — a coherent set of posts, each within the 300-character limit, following the same Threadweaver character-counting rules (URLs = 20, mentions = 15).
 
 The generation prompt should:
 - Instruct Claude on the 300-character limit and counting rules
@@ -102,17 +102,10 @@ The generation prompt should:
 
 The generated draft populates the thread editor, where the user can continue editing manually or with the AI editor.
 
-**URL fetching details:**
-- The backend fetches each URL and extracts readable text (strip nav, ads, boilerplate)
-- Fetched content is summarized or truncated to keep the prompt size manageable
-- Fetch failures are handled gracefully — the URL is passed through as-is with a note that the content was unavailable
-
 **Open questions:**
 - Should the user be able to provide a tone or style hint before generating?
 - What happens to the existing thread content if the user regenerates? Warn before overwriting?
 - Should there be a way to regenerate just one post, or only full-thread generation?
-- Should the user see which URLs were fetched and what was extracted, for transparency?
-- How to handle paywalled or login-gated URLs?
 
 ---
 
@@ -180,5 +173,5 @@ These cut across multiple features and need decisions before implementation begi
 
 ## Status
 
-**Last updated:** 2026-04-20 (rev: notes panel — plaintext, collapsible, no limit)
+**Last updated:** 2026-04-20 (rev: drop URL fetching from AI generation)
 **Stage:** Idea exploration — not yet approved for implementation
