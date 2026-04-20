@@ -102,10 +102,11 @@ The generation prompt should:
 
 The generated draft populates the thread editor, where the user can continue editing manually or with the AI editor.
 
+Generation always produces the full thread — not individual posts. Individual post refinement is handled by the AI editing mode (Feature 5).
+
 **Open questions:**
 - Should the user be able to provide a tone or style hint before generating?
 - What happens to the existing thread content if the user regenerates? Warn before overwriting?
-- Should there be a way to regenerate just one post, or only full-thread generation?
 
 ---
 
@@ -173,5 +174,5 @@ These cut across multiple features and need decisions before implementation begi
 
 ## Status
 
-**Last updated:** 2026-04-20 (rev: drop URL fetching from AI generation)
+**Last updated:** 2026-04-20 (rev: AI generation produces full thread only)
 **Stage:** Idea exploration — not yet approved for implementation
