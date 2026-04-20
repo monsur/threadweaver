@@ -48,7 +48,7 @@ Users can create, name, and switch between multiple drafts. Each draft contains:
 - A notes area (see below)
 - Created and last-modified timestamps
 
-**UI:** A sidebar or draft-picker overlay showing saved drafts. Ability to create, rename, and delete drafts.
+**UI:** A hamburger menu on the right side of the screen. Clicking it expands a sidebar panel listing saved drafts; clicking again collapses it. The sidebar contains controls to create, rename, and delete drafts.
 
 **Open questions:**
 - Should drafts be sorted by last modified date?
@@ -179,5 +179,5 @@ These cut across multiple features and need decisions before implementation begi
 
 ## Status
 
-**Last updated:** 2026-04-20 (rev: URL fetching in AI generation)
+**Last updated:** 2026-04-20 (rev: sidebar is a right-side hamburger menu)
 **Stage:** Idea exploration — not yet approved for implementation
