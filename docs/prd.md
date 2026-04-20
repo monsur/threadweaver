@@ -86,10 +86,7 @@ Each draft has a notes area — a free-form text field that sits alongside the t
 
 Think of it as a scratchpad: links to research, rough ideas, quotes, bullet points, reminders to self.
 
-**Open questions:**
-- Should notes support markdown? Or plain text only?
-- Should the notes panel be always visible, or collapsible?
-- Any character/size limit on notes?
+Notes are plain text. The panel is collapsible. There is no character limit.
 
 ---
 
@@ -183,5 +180,5 @@ These cut across multiple features and need decisions before implementation begi
 
 ## Status
 
-**Last updated:** 2026-04-20 (rev: offline support with background sync)
+**Last updated:** 2026-04-20 (rev: notes panel — plaintext, collapsible, no limit)
 **Stage:** Idea exploration — not yet approved for implementation
