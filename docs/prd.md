@@ -106,8 +106,7 @@ Generation always produces the full thread — not individual posts. Individual 
 
 Tone and style hints are not a separate feature — the user can include them directly in the notes (e.g. "keep it casual" or "this is for a technical audience"). Claude will pick them up naturally.
 
-**Open questions:**
-- What happens to the existing thread content if the user regenerates? Warn before overwriting?
+If the thread editor already has content when the user hits "Generate draft," the app shows a confirmation warning before overwriting. If the editor is empty, generation proceeds without a prompt.
 
 ---
 
@@ -175,5 +174,5 @@ These cut across multiple features and need decisions before implementation begi
 
 ## Status
 
-**Last updated:** 2026-04-20 (rev: tone/style hints via notes, not separate UI)
+**Last updated:** 2026-04-20 (rev: warn before overwriting existing thread content)
 **Stage:** Idea exploration — not yet approved for implementation
