@@ -64,14 +64,16 @@ There is no limit on the number of drafts.
 
 Today, drafts live in `localStorage` — single-device, single-browser. The upgrade requires a backend so drafts survive across devices.
 
-Auth is needed to associate drafts with a user. The natural option is **Bluesky OAuth (AT Protocol)** — users already have a Bluesky account, and it avoids building a separate auth system.
+**Auth mechanism:** A single password stored as an environment variable (`APP_PASSWORD`). The first visit on any device shows a minimal password screen; on success the server sets a signed cookie and all subsequent visits are seamless.
+
+**Sessions:** Stateless signed cookies — no session table needed. The server signs the cookie with a secret derived from the `APP_PASSWORD` hash. This means:
+- Server restarts don't log you out (no in-memory or DB state to lose)
+- Changing `APP_PASSWORD` automatically invalidates all existing cookies (since the signing secret changes)
+- Forgotten password: update the env var in your hosting platform and redeploy — you can never be permanently locked out as long as you can access the hosting dashboard
+
+**New device onboarding:** Visit the URL, enter the password, done.
 
 **Open questions:**
-- Is Bluesky OAuth the right auth mechanism, or is something simpler (e.g. email/password, passkeys) better for this use case?
-- What backend/storage? Options:
-  - Simple: Node.js/Express + a small database (SQLite, Postgres)
-  - Serverless: Cloudflare Workers + D1 or KV
-  - AT Protocol native: Store drafts as Bluesky records (keeps everything in the ecosystem)
 - Should there be an offline/local mode for users who don't want to sign in?
 
 ---
@@ -182,5 +184,5 @@ These cut across multiple features and need decisions before implementation begi
 
 ## Status
 
-**Last updated:** 2026-04-20 (rev: draft deletion with undo window)
+**Last updated:** 2026-04-20 (rev: auth — single password, stateless signed cookies)
 **Stage:** Idea exploration — not yet approved for implementation
