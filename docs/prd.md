@@ -50,8 +50,11 @@ Users can create, name, and switch between multiple drafts. Each draft contains:
 
 **UI:** A hamburger menu on the right side of the screen. Clicking it expands a sidebar panel listing saved drafts; clicking again collapses it. The sidebar contains controls to create, rename, and delete drafts.
 
+**Sorting:** Drafts are sorted by last modified date, most recent first.
+
+**Search:** A search input at the top of the sidebar filters the draft list in real time as the user types. Search matches against all fields — title, thread content, and notes. Search runs entirely client-side against the locally cached draft list, so there is no server round trip and results update instantly on each keystroke.
+
 **Open questions:**
-- Should drafts be sorted by last modified date?
 - Should there be a "trash" / soft delete, or immediate hard delete?
 - Any limit on number of drafts?
 
@@ -179,5 +182,5 @@ These cut across multiple features and need decisions before implementation begi
 
 ## Status
 
-**Last updated:** 2026-04-20 (rev: sidebar is a right-side hamburger menu)
+**Last updated:** 2026-04-20 (rev: draft sorting and client-side search)
 **Stage:** Idea exploration — not yet approved for implementation
