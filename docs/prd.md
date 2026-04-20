@@ -73,8 +73,7 @@ Today, drafts live in `localStorage` — single-device, single-browser. The upgr
 
 **New device onboarding:** Visit the URL, enter the password, done.
 
-**Open questions:**
-- Should there be an offline/local mode for users who don't want to sign in?
+**Offline support:** Authenticated users can continue using the app with no internet connection. Drafts are cached locally (IndexedDB) so all read/write/delete operations work offline. AI features (generation, editing) require a network connection and show a clear "requires internet" message when offline. When the connection is restored, local changes sync to the server automatically in the background — no manual action needed. Since there is only one user, conflict resolution is simple: last write wins.
 
 ---
 
@@ -184,5 +183,5 @@ These cut across multiple features and need decisions before implementation begi
 
 ## Status
 
-**Last updated:** 2026-04-20 (rev: auth — single password, stateless signed cookies)
+**Last updated:** 2026-04-20 (rev: offline support with background sync)
 **Stage:** Idea exploration — not yet approved for implementation
