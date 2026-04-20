@@ -54,9 +54,9 @@ Users can create, name, and switch between multiple drafts. Each draft contains:
 
 **Search:** A search input at the top of the sidebar filters the draft list in real time as the user types. Search matches against all fields — title, thread content, and notes. Search runs entirely client-side against the locally cached draft list, so there is no server round trip and results update instantly on each keystroke.
 
-**Open questions:**
-- Should there be a "trash" / soft delete, or immediate hard delete?
-- Any limit on number of drafts?
+**Deletion:** Deletes are immediate — no trash or soft delete. However, a toast notification with an "Undo" button appears for ~30 seconds after deletion, allowing the user to recover the draft. After the window expires the delete is permanent.
+
+There is no limit on the number of drafts.
 
 ---
 
@@ -182,5 +182,5 @@ These cut across multiple features and need decisions before implementation begi
 
 ## Status
 
-**Last updated:** 2026-04-20 (rev: draft sorting and client-side search)
+**Last updated:** 2026-04-20 (rev: draft deletion with undo window)
 **Stage:** Idea exploration — not yet approved for implementation
