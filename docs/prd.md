@@ -110,6 +110,30 @@ Single-file `index.html` — HTML, vanilla JS, Tailwind CSS (CDN). No build syst
 
 ---
 
+## Testing
+
+### Local development
+The full stack runs locally via Wrangler (Cloudflare's CLI), which emulates Workers and D1 on your machine. A single `npm run dev` starts both the Vite frontend (with hot reload) and the Wrangler backend (with a local SQLite database). No internet connection required during development.
+
+### Test layers
+
+**Unit tests** — core logic: character counting, chunk splitting, client-side search filtering, cookie signing. Run with Vitest (pairs naturally with Vite). These are the highest-value tests since the character counting algorithm is well-defined and already battle-tested.
+
+**Component tests** — Svelte components in isolation: draft list, search input, notes panel, delete undo toast. Vitest + `@testing-library/svelte`.
+
+**Integration tests** — Workers API endpoints: auth, draft CRUD, offline sync. Wrangler's `unstable_dev` helper spins up a local Worker for testing without a browser.
+
+**End-to-end tests** — full app in a real browser via Playwright, running against the local dev server. Cover the golden paths: log in, create draft, edit, save, retrieve after reload, offline editing, sync on reconnect.
+
+### Recommended minimum
+For a personal tool, the highest-leverage investment is:
+1. Unit tests for character counting and chunk splitting
+2. A handful of Playwright tests for the golden path (login → create → edit → persist → retrieve)
+
+Component and integration tests are useful but not essential.
+
+---
+
 ## Open Questions (Unresolved)
 
 None at this time.
@@ -118,5 +142,5 @@ None at this time.
 
 ## Status
 
-**Last updated:** 2026-04-20 (rev: tech stack — Cloudflare Workers + D1 + Pages, Svelte frontend)
+**Last updated:** 2026-04-20 (rev: add testing section)
 **Stage:** Idea exploration — not yet approved for implementation
