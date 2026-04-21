@@ -93,27 +93,30 @@ Notes are plain text. The panel is collapsible. There is no character limit.
 ### Current stack
 Single-file `index.html` — HTML, vanilla JS, Tailwind CSS (CDN). No build system, no backend, no dependencies.
 
-### Upgrade path
-A backend and auth system are required for cloud persistence. Options:
+### Target stack
 
-| Approach | Pros | Cons |
-|---|---|---|
-| Node.js + Postgres (e.g. on Railway/Render) | Familiar, flexible | Requires server management |
-| Cloudflare Workers + D1 | Zero cold starts, cheap, edge | Less familiar stack |
-| AT Protocol records | Native Bluesky integration | AT Protocol complexity; records are public |
+| Layer | Technology |
+|---|---|
+| Frontend | Svelte + Vite |
+| Backend | Cloudflare Workers |
+| Database | Cloudflare D1 (SQLite) |
+| Hosting | Cloudflare Pages (frontend) + Workers (backend) |
 
-The frontend will likely need to move from a single HTML file to a proper build (Vite + vanilla JS or a lightweight framework) to manage the added complexity.
+**Why Cloudflare:** Free tier covers all personal use. No cold starts. Frontend, backend, and database all under one account. Workers + D1 is a natural pairing.
+
+**Workers runtime note:** Cloudflare Workers runs on the V8 isolate runtime, not Node.js. Most standard Web APIs are available, but Node.js-specific APIs are not. This is a minor constraint for a CRUD app — worth keeping in mind when choosing libraries.
+
+**Frontend migration:** The frontend moves from a single HTML file to a Svelte + Vite project. Svelte's reactivity is a natural fit for the new UI — live search, offline sync state, collapsible panels, and draft switching all involve non-trivial state management that is awkward in vanilla JS.
 
 ---
 
 ## Open Questions (Unresolved)
 
-1. **Backend stack:** Where does Threadweaver's server live?
-2. **Frontend migration:** Stay vanilla JS with a build step, or adopt a lightweight framework (e.g. Preact, Solid)?
+None at this time.
 
 ---
 
 ## Status
 
-**Last updated:** 2026-04-20 (rev: AI features moved to future-ideas.md)
+**Last updated:** 2026-04-20 (rev: tech stack — Cloudflare Workers + D1 + Pages, Svelte frontend)
 **Stage:** Idea exploration — not yet approved for implementation
