@@ -1,8 +1,19 @@
 # Threadweaver Implementation Plan
 
-Granular step-by-step plan for upgrading Threadweaver per the PRD. Each step includes what to build, what tests to write, and how to verify before moving on.
+## Progress Tracker
 
-**Rule:** Don't move to the next step until tests pass and the feature works manually in the browser.
+| Field | Value |
+|---|---|
+| **Last updated** | 2026-04-20 |
+| **Last completed step** | Phase 1 complete (Step 1.6) |
+| **Resume from** | Phase 2, Step 2.1 |
+| **Notes** | Playwright browser download unavailable in dev environment — run `npx playwright install chromium` on your local machine before running E2E tests |
+
+> Update this table at the end of each work session before stopping.
+
+---
+
+**Rule:** Don't move to the next step until all checkboxes in that step are ticked.
 
 ---
 
@@ -10,126 +21,80 @@ Granular step-by-step plan for upgrading Threadweaver per the PRD. Each step inc
 
 ### Step 1.1 — Initialize the Svelte + Vite frontend
 
-Create a new Svelte project using Vite's scaffolding tool.
-
-```
-npm create vite@latest frontend -- --template svelte
-cd frontend && npm install
-```
-
-**Files created:**
-- `frontend/src/App.svelte`
-- `frontend/src/main.js`
-- `frontend/vite.config.js`
-- `frontend/package.json`
-
-**Verify:** `npm run dev` inside `frontend/` serves a working Svelte app at `localhost:5173`.
+- [x] Run `npm create vite@latest frontend -- --template svelte`
+- [x] Run `cd frontend && npm install`
+- [x] **Verify:** `npm run dev` inside `frontend/` serves a Svelte app at `localhost:5173`
+- [x] **Manual validation:** Open `localhost:5173` in the browser — default Svelte welcome page loads without errors
 
 ---
 
 ### Step 1.2 — Initialize the Cloudflare Workers backend
 
-Create a Workers project using Wrangler.
-
-```
-npm create cloudflare@latest backend -- --type hello-world
-cd backend && npm install
-```
-
-**Files created:**
-- `backend/src/index.js`
-- `backend/wrangler.toml`
-- `backend/package.json`
-
-**Verify:** `npx wrangler dev` inside `backend/` serves a Worker at `localhost:8787` returning a response.
+- [x] Create `backend/` directory with `src/index.js` and `wrangler.toml`
+- [x] Run `cd backend && npm install`
+- [x] **Verify:** `npx wrangler dev` inside `backend/` serves a Worker at `localhost:8787`
+- [x] **Manual validation:** `curl localhost:8787` returns a response without errors
 
 ---
 
-### Step 1.3 — Create the D1 database
+### Step 1.3 — Configure the D1 database
 
-Create a local D1 database for development.
-
-```
-npx wrangler d1 create threadweaver-db
-```
-
-Add the D1 binding to `wrangler.toml`:
-
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "threadweaver-db"
-database_id = "<id from above>"
-```
-
-**Verify:** `npx wrangler d1 execute threadweaver-db --local --command "SELECT 1"` returns a result.
+- [x] Run `npx wrangler d1 create threadweaver-db` and note the database ID
+- [x] Add the D1 binding to `backend/wrangler.toml`
+- [x] Create `backend/migrations/0001_create_drafts.sql` with the drafts table schema
+- [x] Run `npx wrangler d1 migrations apply threadweaver-db --local`
+- [x] **Verify:** `npx wrangler d1 execute threadweaver-db --local --command "SELECT * FROM drafts"` returns an empty result without error
+- [x] **Manual validation:** Output shows `[]` or an empty table — no SQL errors
 
 ---
 
 ### Step 1.4 — Set up Vitest for unit tests
 
-Install Vitest in the frontend project (it will also test shared logic modules).
-
-```
-cd frontend && npm install -D vitest @vitest/ui
-```
-
-Add to `vite.config.js`:
-```js
-test: { environment: 'jsdom' }
-```
-
-Add to `frontend/package.json`:
-```json
-"test": "vitest run",
-"test:watch": "vitest"
-```
-
-Write a smoke test at `frontend/src/lib/__tests__/smoke.test.js`:
-```js
-import { expect, test } from 'vitest'
-test('vitest works', () => expect(1 + 1).toBe(2))
-```
-
-**Verify:** `npm test` passes.
+- [x] Run `cd frontend && npm install -D vitest @vitest/ui jsdom`
+- [x] Add `test: { environment: 'jsdom' }` to `frontend/vite.config.js`
+- [x] Add `"test": "vitest run"` and `"test:watch": "vitest"` scripts to `frontend/package.json`
+- [x] Write smoke test at `frontend/src/lib/__tests__/smoke.test.js`
+- [x] **Verify:** `npm test` inside `frontend/` passes
+- [x] **Manual validation:** Terminal shows green — "1 passed"
 
 ---
 
 ### Step 1.5 — Set up Playwright for E2E tests
 
-Install Playwright in the root of the repo.
-
-```
-npm init playwright@latest
-```
-
-Configure `playwright.config.js` to point at `localhost:5173` (frontend dev server).
-
-Write a smoke test at `tests/smoke.spec.js`:
-```js
-test('app loads', async ({ page }) => {
-  await page.goto('/')
-  await expect(page).toHaveTitle(/Threadweaver/)
-})
-```
-
-**Verify:** `npx playwright test` passes (after frontend dev server is running).
+- [x] Run `npm init playwright@latest` from repo root (choose TypeScript: no, browsers: Chromium only, CI: no)
+- [x] Configure `playwright.config.js` baseURL to `http://localhost:5173`
+- [x] Write smoke test at `tests/smoke.spec.js`
+- [x] **Verify:** Start `npm run dev --prefix frontend`, then `npx playwright test` — smoke test passes
+- [x] **Manual validation:** Playwright report shows 1 passed test
 
 ---
 
 ### Step 1.6 — Unified dev script
 
-Add a root-level `package.json` with a `dev` script that starts both Vite and Wrangler concurrently.
+- [x] Create root-level `package.json`
+- [x] Run `npm install -D concurrently` from repo root
+- [x] Add `"dev"` script using `concurrently` to start both Vite and Wrangler
+- [x] Add `"test"` script that runs Vitest in `frontend/` and Playwright from root
+- [x] **Verify:** `npm run dev` from repo root starts both servers without errors
+- [x] **Manual validation:**
+  - [x] `localhost:5173` loads the Svelte app
+  - [x] `localhost:8787` returns a Worker response
+  - [x] Both stay running without crashing
 
-```
-npm install -D concurrently
-```
+---
 
-```json
-"dev": "concurrently \"npm run dev --prefix frontend\" \"npx wrangler dev --config backend/wrangler.toml\""
-```
+### ✓ Phase 1 Checkpoint
 
-**Verify:** `npm run dev` from the repo root starts both servers.
+Before moving to Phase 2, confirm all of the following:
+
+- [x] `npm run dev` starts both frontend and backend from the repo root
+- [x] `localhost:5173` shows the Svelte welcome page in the browser
+- [x] `localhost:8787` responds to `curl` requests
+- [x] `npm test --prefix frontend` passes (Vitest smoke test)
+- [x] `npx playwright test` passes (Playwright smoke test)
+- [x] D1 database is configured and the drafts table exists locally
+- [x] All Phase 1 step checkboxes above are ticked
+- [x] **Update the Progress Tracker at the top of this file**
 
 ---
 
@@ -137,61 +102,75 @@ npm install -D concurrently
 
 ### Step 2.1 — Extract character counting to a module
 
-Port the character counting algorithm from `index.html` into a standalone module at `frontend/src/lib/charCount.js`. The function takes a string and returns the Bluesky character count (URLs = 20, mentions = 15).
-
-**Tests** (`frontend/src/lib/__tests__/charCount.test.js`):
-- Plain text counts each character
-- A URL `https://example.com` counts as 20 regardless of length
-- A mention `@user.bsky.social` counts as 15 regardless of length
-- Mixed text with URL and mention counts correctly
-- Empty string returns 0
-- String at exactly 300 returns 300
-- String over 300 returns the correct overage count
-
-**Verify:** `npm test` passes all character count cases.
+- [ ] Create `frontend/src/lib/charCount.js` with the Bluesky character counting function (URLs = 20, mentions = 15), ported from `index.html`
+- [ ] Write tests in `frontend/src/lib/__tests__/charCount.test.js`:
+  - [ ] Plain text counts each character
+  - [ ] `https://example.com` counts as 20 regardless of actual length
+  - [ ] `@user.bsky.social` counts as 15 regardless of actual length
+  - [ ] Mixed text with URL and mention counts correctly
+  - [ ] Empty string returns 0
+  - [ ] String at exactly 300 returns 300
+  - [ ] String over 300 returns the correct overage count
+- [ ] **Verify:** `npm test` passes all cases
+- [ ] **Manual validation:** No browser check needed — logic only
 
 ---
 
 ### Step 2.2 — Extract chunk splitting to a module
 
-Port the chunk splitting logic into `frontend/src/lib/chunks.js`. The function takes the full editor text and returns an array of chunk strings, split on `\n\n\n`.
-
-**Tests** (`frontend/src/lib/__tests__/chunks.test.js`):
-- Single chunk (no triple newlines) returns an array of one
-- Two chunks separated by `\n\n\n` returns an array of two
-- Leading/trailing whitespace within a chunk is preserved
-- Empty string returns an array with one empty string
-- Multiple consecutive separators are handled gracefully
-
-**Verify:** `npm test` passes all chunk splitting cases.
+- [ ] Create `frontend/src/lib/chunks.js` with the chunk splitting function, ported from `index.html`
+- [ ] Write tests in `frontend/src/lib/__tests__/chunks.test.js`:
+  - [ ] Single chunk (no triple newlines) returns array of one
+  - [ ] Two chunks separated by `\n\n\n` returns array of two
+  - [ ] Leading/trailing whitespace within a chunk is preserved
+  - [ ] Empty string returns array with one empty string
+  - [ ] Multiple consecutive separators handled gracefully
+- [ ] **Verify:** `npm test` passes all cases
+- [ ] **Manual validation:** No browser check needed — logic only
 
 ---
 
 ### Step 2.3 — Build the Editor Svelte component
 
-Create `frontend/src/lib/Editor.svelte` that replicates the full current `index.html` behavior using the extracted modules from Steps 2.1 and 2.2:
-
-- Textarea with transparent text over a visual render layer
-- Visual layer renders chunk prefixes (1/, 2/, 3/…), character counts, and red overage highlighting
-- Scroll synchronization between textarea and visual layer
-- Auto-resizing height
-- Click chunk prefix to copy individual post (with checkmark animation)
-- "Copy All" button
-- "Clear" button
-- Character counter (`X/300`) for the current chunk
-- "Chunk X of Y" indicator
-
-For now, load/save from `localStorage` (same as today) — cloud sync comes later.
-
-**Verify manually:** Open the app, type a long post, verify chunking, character counting, copy, and clear all work identically to the current `index.html`.
+- [ ] Create `frontend/src/lib/Editor.svelte` replicating all current `index.html` behavior:
+  - [ ] Textarea with transparent text over a visual render layer
+  - [ ] Visual layer with chunk prefixes (1/, 2/, 3/…) and red overage highlighting
+  - [ ] Scroll synchronization between textarea and visual layer
+  - [ ] Auto-resizing height
+  - [ ] Click chunk prefix to copy individual post (checkmark animation)
+  - [ ] "Copy All" button
+  - [ ] "Clear" button
+  - [ ] Character counter (`X/300`) for current chunk
+  - [ ] "Chunk X of Y" indicator
+  - [ ] Load/save from `localStorage` (same as today)
+- [ ] **Verify:** `npm test` still passes
+- [ ] **Manual validation:**
+  - [ ] Type a short post — character count updates correctly
+  - [ ] Type past 300 characters — overage text turns red
+  - [ ] Add triple newlines to create a second chunk — prefix shows "2/"
+  - [ ] Click "1/" — post is copied to clipboard, checkmark animates
+  - [ ] Click "Copy All" — all posts copied with numbering
+  - [ ] Click "Clear" — editor resets
+  - [ ] Reload page — content is restored from localStorage
 
 ---
 
-### Step 2.4 — Replace index.html with the Svelte app
+### Step 2.4 — Wire Editor into App.svelte
 
-Update `frontend/src/App.svelte` to render the `Editor` component. Confirm the app title is "Threadweaver" (for the Playwright smoke test).
+- [ ] Update `frontend/src/App.svelte` to render the `Editor` component
+- [ ] Set the page title to "Threadweaver"
+- [ ] **Verify:** Playwright smoke test passes (title check)
+- [ ] **Manual validation:** App loads in browser showing the editor, not the Svelte welcome page
 
-**Verify:** Playwright smoke test passes. Manual check confirms full editor parity with current app.
+---
+
+### ✓ Phase 2 Checkpoint
+
+- [ ] `npm test` passes all unit tests (charCount, chunks)
+- [ ] `npx playwright test` passes the smoke test
+- [ ] Editor in browser is fully equivalent to the current `index.html` — test all features manually
+- [ ] localStorage persistence works across reloads
+- [ ] **Update the Progress Tracker**
 
 ---
 
@@ -199,91 +178,80 @@ Update `frontend/src/App.svelte` to render the `Editor` component. Confirm the a
 
 ### Step 3.1 — Write the D1 drafts schema migration
 
-Create `backend/migrations/0001_create_drafts.sql`:
-
-```sql
-CREATE TABLE drafts (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL DEFAULT 'Untitled',
-  content TEXT NOT NULL DEFAULT '',
-  notes TEXT NOT NULL DEFAULT '',
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
-);
-```
-
-Apply locally:
-```
-npx wrangler d1 migrations apply threadweaver-db --local
-```
-
-**Verify:** `npx wrangler d1 execute threadweaver-db --local --command "SELECT * FROM drafts"` returns an empty result set without error.
+- [ ] Create `backend/migrations/0001_create_drafts.sql` with the drafts table
+- [ ] Run `npx wrangler d1 migrations apply threadweaver-db --local`
+- [ ] **Verify:** `npx wrangler d1 execute threadweaver-db --local --command "SELECT * FROM drafts"` returns empty set without error
+- [ ] **Manual validation:** No SQL errors in terminal output
 
 ---
 
 ### Step 3.2 — Implement cookie signing utilities
 
-Create `backend/src/lib/auth.js` with two functions:
-- `signCookie(password)` — derives a signing secret from a SHA-256 hash of `APP_PASSWORD`, creates a signed cookie value with an expiry timestamp
-- `verifyCookie(cookieValue, password)` — verifies the signature and expiry, returns `true` or `false`
-
-Use the Web Crypto API (available in Workers runtime — no Node.js `crypto` needed).
-
-**Tests** (`backend/src/lib/__tests__/auth.test.js`) — run with Vitest:
-- A cookie signed with password "abc" verifies correctly with "abc"
-- A cookie signed with password "abc" fails verification with "xyz"
-- A cookie with a past expiry fails verification
-- A tampered cookie value fails verification
-
-**Verify:** `npm test` in `backend/` passes all auth cases.
+- [ ] Create `backend/src/lib/auth.js` with `signCookie(password)` and `verifyCookie(cookieValue, password)` using the Web Crypto API
+- [ ] Install Vitest in `backend/`: `npm install -D vitest`
+- [ ] Write tests in `backend/src/lib/__tests__/auth.test.js`:
+  - [ ] Cookie signed with "abc" verifies with "abc"
+  - [ ] Cookie signed with "abc" fails verification with "xyz"
+  - [ ] Cookie with past expiry fails verification
+  - [ ] Tampered cookie value fails verification
+- [ ] **Verify:** `npm test` in `backend/` passes all auth cases
+- [ ] **Manual validation:** No browser check needed — logic only
 
 ---
 
 ### Step 3.3 — Implement `POST /api/login`
 
-In `backend/src/index.js`, add a route handler for `POST /api/login`:
-- Read `APP_PASSWORD` from environment
-- Compare submitted password (constant-time comparison to prevent timing attacks)
-- On match: set a signed `session` cookie (HttpOnly, SameSite=Strict), return 200
-- On mismatch: return 401
-
-**Integration test** (`backend/src/__tests__/login.test.js`) using Wrangler's `unstable_dev`:
-- Correct password returns 200 and sets a `Set-Cookie` header
-- Wrong password returns 401 and sets no cookie
-- Missing password body returns 400
-
-**Verify:** `npm test` passes. Manual test: `curl -X POST localhost:8787/api/login -d '{"password":"test"}'` returns 200.
+- [ ] Add `POST /api/login` route to `backend/src/index.js`
+- [ ] Implement constant-time password comparison
+- [ ] On match: set signed `session` cookie (HttpOnly, SameSite=Strict), return 200
+- [ ] On mismatch: return 401
+- [ ] Write integration tests in `backend/src/__tests__/login.test.js`:
+  - [ ] Correct password → 200 + `Set-Cookie` header
+  - [ ] Wrong password → 401, no cookie
+  - [ ] Missing body → 400
+- [ ] **Verify:** `npm test` in `backend/` passes
+- [ ] **Manual validation:** `curl -X POST localhost:8787/api/login -H "Content-Type: application/json" -d '{"password":"test"}'` returns 200 and a `Set-Cookie` header
 
 ---
 
 ### Step 3.4 — Implement auth middleware
 
-Add a `requireAuth` middleware function in `backend/src/lib/auth.js` that:
-- Reads the `session` cookie from the request
-- Calls `verifyCookie` against `APP_PASSWORD`
-- Returns a 401 response if invalid
-- Calls through to the next handler if valid
-
-Apply this middleware to all `/api/*` routes except `/api/login`.
-
-**Integration test:** A request to `GET /api/drafts` without a valid cookie returns 401.
-
-**Verify:** `npm test` passes.
+- [ ] Add `requireAuth` middleware to `backend/src/lib/auth.js`
+- [ ] Apply middleware to all `/api/*` routes except `/api/login`
+- [ ] Add `GET /api/me` endpoint — returns 200 if authenticated, 401 if not
+- [ ] Write integration test: `GET /api/drafts` without a valid cookie returns 401
+- [ ] **Verify:** `npm test` in `backend/` passes
+- [ ] **Manual validation:**
+  - [ ] `curl localhost:8787/api/drafts` (no cookie) returns 401
+  - [ ] `curl localhost:8787/api/me` (no cookie) returns 401
 
 ---
 
 ### Step 3.5 — Build the Login UI
 
-Create `frontend/src/lib/Login.svelte`:
-- Single password input + submit button
-- On submit: `POST /api/login` with the password
-- On success: hide the login screen and show the main app
-- On failure: show an "incorrect password" message
-- Input should have `type="password"` and support Enter key submission
+- [ ] Create `frontend/src/lib/Login.svelte` with password input, submit button, and error message
+- [ ] Support Enter key submission
+- [ ] On success: emit an event to show the main app
+- [ ] On failure: show "Incorrect password" message
+- [ ] Update `App.svelte` to call `GET /api/me` on load and show `Login` or `Editor` based on result
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:**
+  - [ ] Load app — login screen appears
+  - [ ] Enter wrong password — "Incorrect password" message appears
+  - [ ] Enter correct password — editor appears
+  - [ ] Reload page — editor shown immediately (no re-prompt)
+  - [ ] Clear cookies in DevTools — login screen appears again
 
-Update `App.svelte` to show `Login` or `Editor` based on auth state (check for a valid session cookie on load by calling a `GET /api/me` endpoint that returns 200 if authenticated, 401 if not).
+---
 
-**Verify manually:** Load the app, enter wrong password (error shown), enter correct password (editor shown). Reload — editor shown without re-prompting (cookie persists).
+### ✓ Phase 3 Checkpoint
+
+- [ ] All backend tests pass (`npm test` in `backend/`)
+- [ ] All frontend tests pass (`npm test` in `frontend/`)
+- [ ] Login → editor flow works end-to-end in the browser
+- [ ] Unauthenticated requests to `/api/*` return 401
+- [ ] Cookie persists across page reloads
+- [ ] **Update the Progress Tracker**
 
 ---
 
@@ -291,63 +259,72 @@ Update `App.svelte` to show `Login` or `Editor` based on auth state (check for a
 
 ### Step 4.1 — `GET /api/drafts`
 
-Returns all drafts as a JSON array, sorted by `updated_at` descending.
-
-```json
-[{ "id": "…", "title": "…", "content": "…", "notes": "…", "created_at": 0, "updated_at": 0 }]
-```
-
-**Tests:**
-- Returns 200 with an empty array when no drafts exist
-- Returns 200 with drafts sorted by `updated_at` descending
-- Returns 401 without a valid session cookie
+- [ ] Implement route returning all drafts sorted by `updated_at` descending
+- [ ] Write tests:
+  - [ ] Returns 200 with empty array when no drafts exist
+  - [ ] Returns drafts sorted by `updated_at` descending
+  - [ ] Returns 401 without a valid session cookie
+- [ ] **Verify:** `npm test` in `backend/` passes
+- [ ] **Manual validation:** `curl localhost:8787/api/drafts -H "Cookie: session=<valid-cookie>"` returns `[]`
 
 ---
 
 ### Step 4.2 — `POST /api/drafts`
 
-Creates a new draft. Accepts a JSON body with optional `title`, `content`, `notes`. Generates a UUID for the `id`. Sets `created_at` and `updated_at` to `Date.now()`. Returns the created draft as JSON with a 201 status.
-
-**Tests:**
-- Creates a draft with provided fields, returns 201 with full draft object
-- Creates a draft with no body, returns 201 with default values
-- Returns 401 without a valid session cookie
+- [ ] Implement route creating a draft with UUID, defaulting `title`/`content`/`notes`, setting timestamps
+- [ ] Write tests:
+  - [ ] Creates draft with provided fields, returns 201 with full object
+  - [ ] Creates draft with no body, returns 201 with defaults
+  - [ ] Returns 401 without a valid session cookie
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:** `curl -X POST localhost:8787/api/drafts -H "Cookie: session=<valid-cookie>" -H "Content-Type: application/json" -d '{"title":"Test"}'` returns 201 with a draft object including an `id`
 
 ---
 
 ### Step 4.3 — `GET /api/drafts/:id`
 
-Returns a single draft by ID. Returns 404 if not found.
-
-**Tests:**
-- Returns 200 with the correct draft
-- Returns 404 for an unknown ID
-- Returns 401 without a valid session cookie
+- [ ] Implement route returning a single draft by ID
+- [ ] Write tests:
+  - [ ] Returns 200 with the correct draft
+  - [ ] Returns 404 for an unknown ID
+  - [ ] Returns 401 without a valid session cookie
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:** Use the ID from Step 4.2 — `curl localhost:8787/api/drafts/<id> -H "Cookie: session=<valid-cookie>"` returns the draft
 
 ---
 
 ### Step 4.4 — `PUT /api/drafts/:id`
 
-Updates an existing draft. Accepts a JSON body with any combination of `title`, `content`, `notes`. Updates `updated_at` to `Date.now()`. Returns the updated draft.
-
-**Tests:**
-- Updates `content` only, other fields unchanged, `updated_at` bumped
-- Updates all fields at once
-- Returns 404 for an unknown ID
-- Returns 401 without a valid session cookie
+- [ ] Implement route updating a draft, bumping `updated_at`
+- [ ] Write tests:
+  - [ ] Updates `content` only, other fields unchanged, `updated_at` bumped
+  - [ ] Updates all fields at once
+  - [ ] Returns 404 for unknown ID
+  - [ ] Returns 401 without a valid session cookie
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:** `curl -X PUT localhost:8787/api/drafts/<id> -H "Cookie: session=<valid-cookie>" -H "Content-Type: application/json" -d '{"title":"Updated"}'` returns updated draft with new `updated_at`
 
 ---
 
 ### Step 4.5 — `DELETE /api/drafts/:id`
 
-Deletes a draft by ID. Returns 204 on success, 404 if not found.
+- [ ] Implement route deleting a draft, returning 204
+- [ ] Write tests:
+  - [ ] Deletes the draft, subsequent GET returns 404
+  - [ ] Returns 404 for unknown ID
+  - [ ] Returns 401 without a valid session cookie
+- [ ] **Verify:** `npm test` in `backend/` passes all tests across all endpoints
+- [ ] **Manual validation:** `curl -X DELETE localhost:8787/api/drafts/<id> -H "Cookie: session=<valid-cookie>"` returns 204, subsequent GET returns 404
 
-**Tests:**
-- Deletes the draft, subsequent GET returns 404
-- Returns 404 for an unknown ID
-- Returns 401 without a valid session cookie
+---
 
-**Verify all API tests:** `npm test` in `backend/` passes.
+### ✓ Phase 4 Checkpoint
+
+- [ ] All 5 endpoints implemented and tested
+- [ ] `npm test` in `backend/` passes everything
+- [ ] Manually exercised all endpoints with `curl`
+- [ ] Auth middleware blocks all endpoints without a valid cookie
+- [ ] **Update the Progress Tracker**
 
 ---
 
@@ -355,109 +332,162 @@ Deletes a draft by ID. Returns 204 on success, 404 if not found.
 
 ### Step 5.1 — Draft store
 
-Create `frontend/src/lib/stores/drafts.js` — a Svelte writable store that holds the full list of drafts in memory. Expose functions:
-- `loadDrafts()` — fetches from `GET /api/drafts` and populates the store
-- `createDraft()` — calls `POST /api/drafts`, adds to store
-- `updateDraft(id, fields)` — calls `PUT /api/drafts/:id`, updates store
-- `deleteDraft(id)` — calls `DELETE /api/drafts/:id`, removes from store
-
-**Tests** (`frontend/src/lib/__tests__/drafts.test.js`) — mock fetch, verify store state after each operation.
+- [ ] Create `frontend/src/lib/stores/drafts.js` with `loadDrafts`, `createDraft`, `updateDraft`, `deleteDraft`
+- [ ] Write tests in `frontend/src/lib/__tests__/drafts.test.js` (mock fetch):
+  - [ ] `loadDrafts` populates the store with API response
+  - [ ] `createDraft` adds the new draft to the store
+  - [ ] `updateDraft` updates the correct draft in the store
+  - [ ] `deleteDraft` removes the draft from the store
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:** Open browser console — call `loadDrafts()` manually and confirm the store updates (use Svelte devtools or a temporary console log)
 
 ---
 
 ### Step 5.2 — Hamburger menu + sidebar shell
 
-Create `frontend/src/lib/Sidebar.svelte`:
-- A hamburger button fixed to the top-right of the screen
-- Clicking toggles a sidebar panel sliding in from the right
-- Sidebar overlays the editor (does not push it)
-- Clicking outside the sidebar closes it
-- Keyboard: `Escape` closes it
-
-**Verify manually:** Hamburger opens/closes sidebar smoothly.
+- [ ] Create `frontend/src/lib/Sidebar.svelte` with hamburger button fixed to top-right
+- [ ] Sidebar slides in from the right, overlays the editor
+- [ ] Clicking outside closes it; `Escape` key closes it
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:**
+  - [ ] Hamburger button visible in top-right corner
+  - [ ] Click hamburger — sidebar opens smoothly
+  - [ ] Click hamburger again — sidebar closes
+  - [ ] Click outside sidebar — sidebar closes
+  - [ ] Press Escape — sidebar closes
+  - [ ] Sidebar does not push or resize the editor
 
 ---
 
 ### Step 5.3 — Draft list
 
-Inside the sidebar, render the list of drafts from the store (sorted by `updated_at`, most recent first). Each list item shows the draft title and last-modified date. Clicking a draft item:
-- Loads that draft into the editor
-- Closes the sidebar
-
-**Verify manually:** Create two drafts via the API directly, open the sidebar, see both listed in order, click one to load it.
+- [ ] Render draft list inside sidebar, sorted by `updated_at` most recent first
+- [ ] Each item shows title and last-modified date
+- [ ] Clicking an item loads that draft into the editor and closes sidebar
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:**
+  - [ ] Create two drafts via `curl`, open sidebar — both appear in correct order
+  - [ ] Click a draft — editor loads its content, sidebar closes
+  - [ ] Edit draft, reopen sidebar — `updated_at` order updates correctly
 
 ---
 
 ### Step 5.4 — Search
 
-At the top of the sidebar, add a text input. As the user types, filter the displayed draft list client-side. Match against `title`, `content`, and `notes` fields (case-insensitive substring match).
-
-**Tests** (`frontend/src/lib/__tests__/draftSearch.test.js`):
-- Empty query returns all drafts
-- Query matching title returns correct drafts
-- Query matching content returns correct drafts
-- Query matching notes returns correct drafts
-- Query matching nothing returns empty list
-- Search is case-insensitive
-
-**Verify:** `npm test` passes. Manual check: type in search box, list filters in real time.
+- [ ] Add search input at top of sidebar, filtering draft list client-side on each keystroke
+- [ ] Match against `title`, `content`, and `notes` (case-insensitive substring)
+- [ ] Write tests in `frontend/src/lib/__tests__/draftSearch.test.js`:
+  - [ ] Empty query returns all drafts
+  - [ ] Query matching title returns correct drafts
+  - [ ] Query matching content returns correct drafts
+  - [ ] Query matching notes returns correct drafts
+  - [ ] Query matching nothing returns empty list
+  - [ ] Search is case-insensitive
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:**
+  - [ ] Type a word that matches a draft title — list filters instantly
+  - [ ] Type a word from a draft's content — that draft appears
+  - [ ] Type nonsense — empty list shown
+  - [ ] Clear search — full list returns
 
 ---
 
 ### Step 5.5 — Create draft
 
-Add a "New draft" button at the top of the sidebar. Clicking it:
-- Calls `createDraft()` from the store
-- Switches the editor to the new (empty) draft
-- Closes the sidebar
-
-**Verify manually:** Click "New draft," a blank editor appears, the draft appears in the sidebar list.
+- [ ] Add "New draft" button at top of sidebar
+- [ ] On click: call `createDraft()`, switch editor to new draft, close sidebar
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:**
+  - [ ] Click "New draft" — blank editor appears with "Untitled" title
+  - [ ] New draft appears at top of sidebar list
+  - [ ] Previously active draft is preserved and visible in list
 
 ---
 
 ### Step 5.6 — Rename draft
 
-Clicking the draft title in the editor makes it editable inline (a plain text input replacing the title display). On blur or Enter, calls `updateDraft(id, { title })`.
-
-**Verify manually:** Click title, type a new name, press Enter, reopen sidebar — new name appears.
+- [ ] Make draft title in editor editable inline on click
+- [ ] On blur or Enter, call `updateDraft(id, { title })`
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:**
+  - [ ] Click draft title — becomes an input field
+  - [ ] Type new name, press Enter — title updates
+  - [ ] Reopen sidebar — new name shown in list
+  - [ ] Click away without changing — no spurious API call
 
 ---
 
 ### Step 5.7 — Delete draft with undo
 
-Add a delete button (trash icon) on each draft list item. On click:
-- Remove draft from the local store immediately (optimistic)
-- Show a toast: "Draft deleted. Undo" with a 30-second countdown
-- If Undo is clicked within 30 seconds: restore the draft to the store and skip the API call
-- If the timer expires without Undo: call `DELETE /api/drafts/:id`
-- If the deleted draft was the active one: switch to the next most-recent draft (or create a blank one if none remain)
+- [ ] Add trash icon button to each sidebar draft item
+- [ ] On click: remove from store immediately, show "Draft deleted. Undo" toast with 30s countdown
+- [ ] Undo within window: restore draft to store, skip API call
+- [ ] After 30s: call `DELETE /api/drafts/:id`
+- [ ] If active draft deleted: switch to next most-recent or create blank
+- [ ] Write tests in `frontend/src/lib/__tests__/deleteUndo.test.js`:
+  - [ ] Undo within window restores draft, no DELETE call made
+  - [ ] DELETE called exactly once after window expires
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:**
+  - [ ] Delete a draft — disappears from list, toast appears
+  - [ ] Click Undo — draft reappears, no network call made
+  - [ ] Delete again, wait 30s — draft is gone, DELETE was called
+  - [ ] Delete the active draft — editor switches to another draft
 
-**Tests** (`frontend/src/lib/__tests__/deleteUndo.test.js`):
-- Undo within window restores draft, no DELETE call made
-- Undo after window has expired is not possible
-- DELETE is called exactly once after the window expires
+---
 
-**Verify manually:** Delete a draft, click Undo — it returns. Delete again, wait 30 seconds — it's gone.
+### ✓ Phase 5 Checkpoint
+
+- [ ] All draft store tests pass
+- [ ] All search tests pass
+- [ ] All delete/undo tests pass
+- [ ] `npx playwright test` passes
+- [ ] **Full manual walkthrough:**
+  - [ ] Create 3 drafts, verify they appear sorted by modified date
+  - [ ] Search across title, content, and notes
+  - [ ] Rename a draft, confirm it persists after reload
+  - [ ] Delete with undo, delete without undo
+  - [ ] Switch between drafts — editor loads correct content each time
+- [ ] **Update the Progress Tracker**
 
 ---
 
 ## Phase 6: Notes Panel
 
-### Step 6.1 — Add notes to editor layout
+### Step 6.1 — Add notes panel to editor layout
 
-Update the editor layout in `Editor.svelte` to show a notes panel alongside the thread editor. The panel contains a plain text `<textarea>` labelled "Notes." It sits to the right of (or below, depending on screen width) the main editor.
-
-The panel has a collapse/expand toggle. When collapsed, only the toggle button is visible.
-
-**Verify manually:** Notes panel visible, collapsible, does not interfere with the editor.
+- [ ] Update `Editor.svelte` layout to include a collapsible notes panel
+- [ ] Notes panel contains a plain-text `<textarea>` labelled "Notes"
+- [ ] Collapse/expand toggle button; when collapsed only toggle is visible
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:**
+  - [ ] Notes panel visible alongside editor
+  - [ ] Click toggle — panel collapses
+  - [ ] Click toggle again — panel expands
+  - [ ] Notes panel does not interfere with the editor or chunk rendering
 
 ---
 
 ### Step 6.2 — Wire notes to draft store
 
-When the active draft changes, populate the notes textarea with `draft.notes`. On each keystroke in the notes textarea, debounce (500ms) and call `updateDraft(id, { notes })`.
+- [ ] When active draft changes, populate notes textarea from `draft.notes`
+- [ ] On keystroke in notes textarea, debounce 500ms and call `updateDraft(id, { notes })`
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:**
+  - [ ] Type in notes — wait 500ms — no visible error
+  - [ ] Reload page — notes are still there
+  - [ ] Switch to a different draft — notes area updates to that draft's notes
+  - [ ] Switch back — original notes are intact
 
-**Verify manually:** Type in notes, reload the page — notes persist. Switch drafts — notes update correctly.
+---
+
+### ✓ Phase 6 Checkpoint
+
+- [ ] All tests pass
+- [ ] Notes persist across reloads
+- [ ] Notes are per-draft (switching drafts swaps notes correctly)
+- [ ] Collapse/expand works cleanly
+- [ ] **Update the Progress Tracker**
 
 ---
 
@@ -465,72 +495,90 @@ When the active draft changes, populate the notes textarea with `draft.notes`. O
 
 ### Step 7.1 — IndexedDB service
 
-Create `frontend/src/lib/db.js` — a thin wrapper around IndexedDB with functions mirroring the API:
-- `getAll()` — returns all drafts
-- `get(id)` — returns one draft
-- `put(draft)` — upserts a draft
-- `remove(id)` — deletes a draft
-- `getUpdatedAfter(timestamp)` — returns drafts modified after a given timestamp (used for sync)
-
-**Tests** (`frontend/src/lib/__tests__/db.test.js`) using `fake-indexeddb`:
-- `put` then `get` returns the same draft
-- `put` twice updates the record
-- `remove` then `get` returns undefined
-- `getAll` returns all stored drafts
-- `getUpdatedAfter` returns only drafts modified after the given timestamp
-
-**Verify:** `npm test` passes.
+- [ ] Run `npm install -D fake-indexeddb` in `frontend/`
+- [ ] Create `frontend/src/lib/db.js` with `getAll`, `get`, `put`, `remove`, `getUpdatedAfter`
+- [ ] Write tests in `frontend/src/lib/__tests__/db.test.js`:
+  - [ ] `put` then `get` returns the same draft
+  - [ ] `put` twice updates the record
+  - [ ] `remove` then `get` returns undefined
+  - [ ] `getAll` returns all stored drafts
+  - [ ] `getUpdatedAfter` returns only drafts modified after the given timestamp
+- [ ] **Verify:** `npm test` passes all db cases
+- [ ] **Manual validation:** No browser check needed — logic only
 
 ---
 
 ### Step 7.2 — Write-through caching
 
-Update the draft store functions (Step 5.1) so every operation writes to IndexedDB first, then to the API:
-- `loadDrafts()` — reads from IndexedDB immediately (fast), then fetches from API and merges (last write wins by `updated_at`)
-- `createDraft()` — writes to IndexedDB, then API
-- `updateDraft()` — writes to IndexedDB, then API
-- `deleteDraft()` — removes from IndexedDB, then API
-
-This ensures the UI is always fast (reads from local cache) and changes are durable even if the API call fails.
-
-**Tests:** Mock the API to fail; verify IndexedDB still has the correct state after each operation.
+- [ ] Update `loadDrafts` — read IndexedDB immediately, then fetch API and merge by `updated_at`
+- [ ] Update `createDraft` — write to IndexedDB first, then API
+- [ ] Update `updateDraft` — write to IndexedDB first, then API
+- [ ] Update `deleteDraft` — remove from IndexedDB first, then API
+- [ ] Write tests: mock API to fail; verify IndexedDB has correct state after each operation
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:**
+  - [ ] Open app, create a draft — appears immediately (no loading flash)
+  - [ ] Hard-reload — draft loads instantly from IndexedDB before API responds
 
 ---
 
 ### Step 7.3 — Online/offline detection
 
-Create `frontend/src/lib/stores/network.js` — a Svelte readable store that tracks `navigator.onLine`, updating on `window` `online`/`offline` events.
-
-Expose this store to the UI so components can react to connectivity changes.
-
-**Tests:**
-- Store initializes to `navigator.onLine`
-- Store updates when `online`/`offline` events fire
+- [ ] Create `frontend/src/lib/stores/network.js` tracking `navigator.onLine`
+- [ ] Update on `window` `online`/`offline` events
+- [ ] Show a subtle offline indicator in the UI when offline
+- [ ] Write tests:
+  - [ ] Store initializes to `navigator.onLine`
+  - [ ] Store updates when `online`/`offline` events fire
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:**
+  - [ ] Open browser DevTools → Network → set "Offline"
+  - [ ] Offline indicator appears in the UI
+  - [ ] Set back to online — indicator disappears
 
 ---
 
 ### Step 7.4 — Sync queue
 
-Create `frontend/src/lib/sync.js` with a `syncPending()` function that:
-- Reads all drafts from IndexedDB that have a `pendingSync: true` flag
-- For each: attempts the corresponding API call (create, update, or delete)
-- On success: clears the `pendingSync` flag in IndexedDB
-- On failure: leaves `pendingSync` set for the next sync attempt
-
-Update the draft store to set `pendingSync: true` on any write that fails due to network unavailability.
+- [ ] Add `pendingSync: true` flag to drafts in IndexedDB when an API write fails
+- [ ] Create `frontend/src/lib/sync.js` with `syncPending()` that retries failed writes
+- [ ] On success: clear `pendingSync` flag
+- [ ] On failure: leave flag set for next attempt
+- [ ] Write tests:
+  - [ ] Draft with `pendingSync: true` is retried by `syncPending()`
+  - [ ] On success, `pendingSync` is cleared
+  - [ ] On failure, `pendingSync` remains set
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:** No browser check needed for sync logic — covered in Step 7.5
 
 ---
 
 ### Step 7.5 — Background sync on reconnect
 
-In `App.svelte`, watch the network store. When it transitions from `false` to `true` (offline → online), call `syncPending()` automatically.
+- [ ] In `App.svelte`, watch the network store and call `syncPending()` on offline → online transition
+- [ ] **Verify:** `npm test` passes
+- [ ] **Manual validation:**
+  - [ ] Log in, create a draft
+  - [ ] Open DevTools → Network → set Offline
+  - [ ] Edit the draft — changes save (no errors shown)
+  - [ ] Set back to Online — sync runs silently in background
+  - [ ] Open app in a second browser tab — edited draft is there
 
-**Verify manually:**
-1. Log in, create a draft
-2. Disconnect from the network (browser DevTools → offline mode)
-3. Edit the draft — changes save locally
-4. Reconnect — sync runs in the background
-5. Open the app in a second browser tab — changes are there
+---
+
+### ✓ Phase 7 Checkpoint
+
+- [ ] All IndexedDB tests pass
+- [ ] All sync tests pass
+- [ ] All other tests still pass (no regressions)
+- [ ] `npx playwright test` passes
+- [ ] **Full offline walkthrough:**
+  - [ ] Go offline, create a new draft
+  - [ ] Go offline, edit an existing draft
+  - [ ] Go offline, delete a draft
+  - [ ] Come back online — all changes synced to server
+  - [ ] Verify in a second browser tab
+- [ ] **Update the Progress Tracker**
 
 ---
 
@@ -538,89 +586,80 @@ In `App.svelte`, watch the network store. When it transitions from `false` to `t
 
 ### Step 8.1 — Cloudflare account setup
 
-1. Create a Cloudflare account (if not already done)
-2. Install Wrangler globally: `npm install -g wrangler`
-3. Log in: `npx wrangler login`
-4. Create the production D1 database: `npx wrangler d1 create threadweaver-db`
-5. Update `wrangler.toml` with the production database ID
+- [ ] Create Cloudflare account (if not already done)
+- [ ] Run `npx wrangler login`
+- [ ] Run `npx wrangler d1 create threadweaver-db` (production)
+- [ ] Update `wrangler.toml` with production database ID
 
 ---
 
-### Step 8.2 — Set production environment variables
+### Step 8.2 — Set production secrets
 
-In the Cloudflare dashboard (or via Wrangler), set:
-```
-APP_PASSWORD = <your chosen password>
-```
-
-This is the only secret the app needs.
+- [ ] Set `APP_PASSWORD` via `npx wrangler secret put APP_PASSWORD`
+- [ ] **Manual validation:** `npx wrangler secret list` shows `APP_PASSWORD`
 
 ---
 
 ### Step 8.3 — Apply D1 migrations to production
 
-```
-npx wrangler d1 migrations apply threadweaver-db
-```
-
-**Verify:** `npx wrangler d1 execute threadweaver-db --command "SELECT * FROM drafts"` succeeds.
+- [ ] Run `npx wrangler d1 migrations apply threadweaver-db`
+- [ ] **Verify:** `npx wrangler d1 execute threadweaver-db --command "SELECT * FROM drafts"` succeeds
+- [ ] **Manual validation:** No SQL errors in output
 
 ---
 
 ### Step 8.4 — Deploy the Worker
 
-```
-cd backend && npx wrangler deploy
-```
-
-**Verify:** `curl https://<worker-url>/api/me` returns 401 (auth middleware working).
+- [ ] Run `cd backend && npx wrangler deploy`
+- [ ] **Verify:** `curl https://<worker-url>/api/me` returns 401
+- [ ] **Manual validation:** Worker URL responds — auth middleware is live
 
 ---
 
-### Step 8.5 — Deploy the frontend to Cloudflare Pages
+### Step 8.5 — Deploy frontend to Cloudflare Pages
 
-Build the frontend:
-```
-cd frontend && npm run build
-```
-
-Deploy to Pages:
-```
-npx wrangler pages deploy dist --project-name threadweaver
-```
-
-Configure the Pages project to proxy `/api/*` requests to the Worker (via a `_routes.json` or Pages Functions proxy).
-
-**Verify:** Visit the Pages URL, log in, create a draft.
+- [ ] Run `cd frontend && npm run build`
+- [ ] Run `npx wrangler pages deploy dist --project-name threadweaver`
+- [ ] Configure Pages to proxy `/api/*` to the Worker
+- [ ] **Manual validation:** Visit Pages URL — login screen appears
 
 ---
 
-### Step 8.6 — Run E2E tests against production
+### Step 8.6 — Production E2E validation
 
-Update `playwright.config.js` to point at the production URL and run the full Playwright suite.
+- [ ] Update `playwright.config.js` baseURL to production URL
+- [ ] Run `npx playwright test`
+- [ ] **Manual golden path checklist:**
+  - [ ] Load app → login screen appears
+  - [ ] Enter wrong password → error shown
+  - [ ] Enter correct password → editor appears
+  - [ ] Create a draft, type content → appears in sidebar
+  - [ ] Reload → draft still there
+  - [ ] Open in a second browser (incognito) → draft visible after login
+  - [ ] Delete a draft → undo toast appears → undo works
+  - [ ] Delete a draft → wait 30s → draft gone permanently
+  - [ ] Go offline → edit draft → go online → changes synced to second browser
 
-**Golden path tests to verify:**
-- [ ] Load app → login screen appears
-- [ ] Enter wrong password → error shown
-- [ ] Enter correct password → editor shown
-- [ ] Create a draft, type content → draft appears in sidebar
-- [ ] Reload page → draft still there
-- [ ] Open in a second browser → draft visible (multi-device sync)
-- [ ] Delete a draft → undo toast appears → undo works
-- [ ] Delete a draft → wait 30s → draft gone
-- [ ] Go offline → edit draft → go online → changes synced
+---
+
+### ✓ Phase 8 Checkpoint
+
+- [ ] App is live at the Cloudflare Pages URL
+- [ ] All Playwright tests pass against production
+- [ ] Full manual golden path completed above
+- [ ] **Update the Progress Tracker** — set Last completed step to "Phase 8 complete"
 
 ---
 
 ## Summary
 
-| Phase | Deliverable |
-|---|---|
-| 1 | Project scaffolded, dev environment running |
-| 2 | Core editor logic ported to Svelte, unit tested |
-| 3 | Auth working end-to-end |
-| 4 | Full draft CRUD API with tests |
-| 5 | Draft sidebar: list, search, create, rename, delete+undo |
-| 6 | Notes panel wired to drafts |
-| 7 | IndexedDB cache + offline editing + background sync |
-| 8 | Deployed to Cloudflare, E2E tests passing |
+| Phase | Deliverable | Status |
+|---|---|---|
+| 1 | Project scaffolded, dev environment running | ✅ Done |
+| 2 | Core editor logic ported to Svelte, unit tested | — |
+| 3 | Auth working end-to-end | — |
+| 4 | Full draft CRUD API with tests | — |
+| 5 | Draft sidebar: list, search, create, rename, delete+undo | — |
+| 6 | Notes panel wired to drafts | — |
+| 7 | IndexedDB cache + offline editing + background sync | — |
+| 8 | Deployed to Cloudflare, E2E tests passing | — |
