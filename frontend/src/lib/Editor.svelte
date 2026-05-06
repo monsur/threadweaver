@@ -1,0 +1,188 @@
+<script>
+  import { getChunkDetails } from './charCount.js';
+  import { splitChunks, getCurrentChunkIndex } from './chunks.js';
+
+  const CHARACTER_LIMIT = 300;
+  const STORAGE_KEY = 'bluesky-post-content';
+
+  let content = $state(localStorage.getItem(STORAGE_KEY) ?? '');
+  let cursorPosition = $state(0);
+  let copyAllActive = $state(false);
+  let checkedPrefixIndex = $state(null);
+
+  let textarea = $state(null);
+  let visualEditor = $state(null);
+
+  let chunks = $derived(splitChunks(content));
+  let currentChunkIndex = $derived(getCurrentChunkIndex(content, cursorPosition));
+  let currentChunkDetails = $derived(getChunkDetails(chunks[currentChunkIndex] ?? ''));
+
+  $effect(() => {
+    localStorage.setItem(STORAGE_KEY, content);
+  });
+
+  // Auto-resize textarea and visual editor to match content height
+  $effect(() => {
+    if (!textarea) return;
+    // Read content to make this effect depend on it
+    void content;
+    textarea.style.height = 'auto';
+    const h = textarea.scrollHeight + 'px';
+    textarea.style.height = h;
+    if (visualEditor) visualEditor.style.height = h;
+  });
+
+  function onInput(e) {
+    content = e.target.value;
+    cursorPosition = e.target.selectionStart ?? 0;
+  }
+
+  function onCursorMove(e) {
+    cursorPosition = e.target.selectionStart ?? 0;
+  }
+
+  function copyAll() {
+    if (!content.trim()) return;
+    const text = chunks.map((chunk, i) => `${i + 1}/ ${chunk}`).join('\n\n');
+    copyToClipboard(text);
+    copyAllActive = true;
+    setTimeout(() => { copyAllActive = false; }, 1500);
+  }
+
+  function clear() {
+    content = '';
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  function clickPrefix(index) {
+    const chunk = chunks[index];
+    if (chunk === undefined) return;
+    copyToClipboard(`${index + 1}/ ${chunk}`);
+    checkedPrefixIndex = index;
+    setTimeout(() => { checkedPrefixIndex = null; }, 1000);
+  }
+
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).catch(() => {
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    });
+  }
+</script>
+
+<div class="w-full bg-slate-800 rounded-lg shadow-lg p-6 mb-8">
+  <div class="flex justify-between items-center mb-2">
+    <span class="text-sm font-semibold {currentChunkDetails.isOverage ? 'text-red-400' : 'text-gray-400'}">
+      {currentChunkDetails.length}/{CHARACTER_LIMIT}
+    </span>
+    <span class="text-sm text-gray-500">Chunk {currentChunkIndex + 1} of {chunks.length}</span>
+  </div>
+
+  <div class="editor-container min-h-60">
+    <textarea
+      bind:this={textarea}
+      class="w-full h-full bg-transparent text-lg border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      placeholder="Start writing your post here..."
+      value={content}
+      oninput={onInput}
+      onclick={onCursorMove}
+      onkeyup={onCursorMove}
+    ></textarea>
+
+    <div bind:this={visualEditor} class="visual-editor w-full h-full text-lg">
+      {#each chunks as chunk, i}
+        {#if i > 0}<br><br><br>{/if}
+        {@const details = getChunkDetails(chunk)}
+        <button class="post-prefix" onclick={() => clickPrefix(i)}>
+          {checkedPrefixIndex === i ? '✓' : `${i + 1}/`}
+        </button><span>{details.safeText}</span>{#if details.isOverage}<span class="overage">{details.overageText}</span>{/if}
+      {/each}
+    </div>
+  </div>
+
+  <div class="flex justify-between mt-4">
+    <button onclick={clear} class="btn">Clear</button>
+    <button
+      onclick={copyAll}
+      disabled={!content.trim() || copyAllActive}
+      class="btn disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {copyAllActive ? 'Copied!' : 'Copy All Posts'}
+    </button>
+  </div>
+</div>
+
+<style>
+  .editor-container {
+    position: relative;
+  }
+
+  .editor-container textarea {
+    position: relative;
+    z-index: 10;
+    resize: none;
+    color: transparent;
+    caret-color: #c9d1d9;
+    overflow: hidden;
+    padding: 1rem;
+    padding-left: 2.5rem;
+    clip-path: inset(0 0 0 2.5rem);
+  }
+
+  .visual-editor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border-radius: 0.5rem;
+    background-color: #161b22;
+    pointer-events: none;
+    padding: 1rem;
+    padding-left: 2.5rem;
+  }
+
+  .post-prefix {
+    position: absolute;
+    left: 0.5rem;
+    font-weight: bold;
+    color: #4b5563;
+    cursor: pointer;
+    pointer-events: auto;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    line-height: inherit;
+  }
+
+  .overage {
+    color: #f87171;
+  }
+
+  .btn {
+    background-color: #2563eb;
+    color: white;
+    font-weight: bold;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn:hover {
+    background-color: #1d4ed8;
+  }
+
+  .btn:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+</style>

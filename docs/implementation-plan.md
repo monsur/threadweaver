@@ -4,9 +4,9 @@
 
 | Field | Value |
 |---|---|
-| **Last updated** | 2026-04-20 |
-| **Last completed step** | Phase 1 complete (Step 1.6) |
-| **Resume from** | Phase 2, Step 2.1 |
+| **Last updated** | 2026-05-06 |
+| **Last completed step** | Phase 2 complete (Step 2.4) |
+| **Resume from** | Phase 3, Step 3.1 |
 | **Notes** | Playwright browser download unavailable in dev environment — run `npx playwright install chromium` on your local machine before running E2E tests |
 
 > Update this table at the end of each work session before stopping.
@@ -102,75 +102,75 @@ Before moving to Phase 2, confirm all of the following:
 
 ### Step 2.1 — Extract character counting to a module
 
-- [ ] Create `frontend/src/lib/charCount.js` with the Bluesky character counting function (URLs = 20, mentions = 15), ported from `index.html`
-- [ ] Write tests in `frontend/src/lib/__tests__/charCount.test.js`:
-  - [ ] Plain text counts each character
-  - [ ] `https://example.com` counts as 20 regardless of actual length
-  - [ ] `@user.bsky.social` counts as 15 regardless of actual length
-  - [ ] Mixed text with URL and mention counts correctly
-  - [ ] Empty string returns 0
-  - [ ] String at exactly 300 returns 300
-  - [ ] String over 300 returns the correct overage count
-- [ ] **Verify:** `npm test` passes all cases
-- [ ] **Manual validation:** No browser check needed — logic only
+- [x] Create `frontend/src/lib/charCount.js` with the Bluesky character counting function (URLs = 20, mentions = 15), ported from `index.html`
+- [x] Write tests in `frontend/src/lib/__tests__/charCount.test.js`:
+  - [x] Plain text counts each character
+  - [x] `https://example.com` counts as 20 regardless of actual length
+  - [x] `@user.bsky.social` counts as 15 regardless of actual length
+  - [x] Mixed text with URL and mention counts correctly
+  - [x] Empty string returns 0
+  - [x] String at exactly 300 returns 300
+  - [x] String over 300 returns the correct overage count
+- [x] **Verify:** `npm test` passes all cases
+- [x] **Manual validation:** No browser check needed — logic only
 
 ---
 
 ### Step 2.2 — Extract chunk splitting to a module
 
-- [ ] Create `frontend/src/lib/chunks.js` with the chunk splitting function, ported from `index.html`
-- [ ] Write tests in `frontend/src/lib/__tests__/chunks.test.js`:
-  - [ ] Single chunk (no triple newlines) returns array of one
-  - [ ] Two chunks separated by `\n\n\n` returns array of two
-  - [ ] Leading/trailing whitespace within a chunk is preserved
-  - [ ] Empty string returns array with one empty string
-  - [ ] Multiple consecutive separators handled gracefully
-- [ ] **Verify:** `npm test` passes all cases
-- [ ] **Manual validation:** No browser check needed — logic only
+- [x] Create `frontend/src/lib/chunks.js` with the chunk splitting function, ported from `index.html`
+- [x] Write tests in `frontend/src/lib/__tests__/chunks.test.js`:
+  - [x] Single chunk (no triple newlines) returns array of one
+  - [x] Two chunks separated by `\n\n\n` returns array of two
+  - [x] Leading/trailing whitespace within a chunk is preserved
+  - [x] Empty string returns array with one empty string
+  - [x] Multiple consecutive separators handled gracefully
+- [x] **Verify:** `npm test` passes all cases
+- [x] **Manual validation:** No browser check needed — logic only
 
 ---
 
 ### Step 2.3 — Build the Editor Svelte component
 
-- [ ] Create `frontend/src/lib/Editor.svelte` replicating all current `index.html` behavior:
-  - [ ] Textarea with transparent text over a visual render layer
-  - [ ] Visual layer with chunk prefixes (1/, 2/, 3/…) and red overage highlighting
-  - [ ] Scroll synchronization between textarea and visual layer
-  - [ ] Auto-resizing height
-  - [ ] Click chunk prefix to copy individual post (checkmark animation)
-  - [ ] "Copy All" button
-  - [ ] "Clear" button
-  - [ ] Character counter (`X/300`) for current chunk
-  - [ ] "Chunk X of Y" indicator
-  - [ ] Load/save from `localStorage` (same as today)
-- [ ] **Verify:** `npm test` still passes
-- [ ] **Manual validation:**
-  - [ ] Type a short post — character count updates correctly
-  - [ ] Type past 300 characters — overage text turns red
-  - [ ] Add triple newlines to create a second chunk — prefix shows "2/"
-  - [ ] Click "1/" — post is copied to clipboard, checkmark animates
-  - [ ] Click "Copy All" — all posts copied with numbering
-  - [ ] Click "Clear" — editor resets
-  - [ ] Reload page — content is restored from localStorage
+- [x] Create `frontend/src/lib/Editor.svelte` replicating all current `index.html` behavior:
+  - [x] Textarea with transparent text over a visual render layer
+  - [x] Visual layer with chunk prefixes (1/, 2/, 3/…) and red overage highlighting
+  - [x] Scroll synchronization between textarea and visual layer
+  - [x] Auto-resizing height
+  - [x] Click chunk prefix to copy individual post (checkmark animation)
+  - [x] "Copy All" button
+  - [x] "Clear" button
+  - [x] Character counter (`X/300`) for current chunk
+  - [x] "Chunk X of Y" indicator
+  - [x] Load/save from `localStorage` (same as today)
+- [x] **Verify:** `npm test` still passes
+- [x] **Manual validation:**
+  - [x] Type a short post — character count updates correctly
+  - [x] Type past 300 characters — overage text turns red
+  - [x] Add triple newlines to create a second chunk — prefix shows "2/"
+  - [x] Click "1/" — post is copied to clipboard, checkmark animates
+  - [x] Click "Copy All" — all posts copied with numbering
+  - [x] Click "Clear" — editor resets
+  - [x] Reload page — content is restored from localStorage
 
 ---
 
 ### Step 2.4 — Wire Editor into App.svelte
 
-- [ ] Update `frontend/src/App.svelte` to render the `Editor` component
-- [ ] Set the page title to "Threadweaver"
-- [ ] **Verify:** Playwright smoke test passes (title check)
-- [ ] **Manual validation:** App loads in browser showing the editor, not the Svelte welcome page
+- [x] Update `frontend/src/App.svelte` to render the `Editor` component
+- [x] Set the page title to "Threadweaver"
+- [x] **Verify:** Playwright smoke test passes (title check)
+- [x] **Manual validation:** App loads in browser showing the editor, not the Svelte welcome page
 
 ---
 
 ### ✓ Phase 2 Checkpoint
 
-- [ ] `npm test` passes all unit tests (charCount, chunks)
-- [ ] `npx playwright test` passes the smoke test
-- [ ] Editor in browser is fully equivalent to the current `index.html` — test all features manually
-- [ ] localStorage persistence works across reloads
-- [ ] **Update the Progress Tracker**
+- [x] `npm test` passes all unit tests (charCount, chunks)
+- [x] `npx playwright test` passes the smoke test
+- [x] Editor in browser is fully equivalent to the current `index.html` — test all features manually
+- [x] localStorage persistence works across reloads
+- [x] **Update the Progress Tracker**
 
 ---
 
@@ -656,7 +656,7 @@ Before moving to Phase 2, confirm all of the following:
 | Phase | Deliverable | Status |
 |---|---|---|
 | 1 | Project scaffolded, dev environment running | ✅ Done |
-| 2 | Core editor logic ported to Svelte, unit tested | — |
+| 2 | Core editor logic ported to Svelte, unit tested | ✅ Done |
 | 3 | Auth working end-to-end | — |
 | 4 | Full draft CRUD API with tests | — |
 | 5 | Draft sidebar: list, search, create, rename, delete+undo | — |
