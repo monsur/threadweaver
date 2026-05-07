@@ -1,7 +1,8 @@
 import { describe, test, expect } from 'vitest';
 import worker from '../index.js';
+import { createD1Mock } from '../test-utils/d1-mock.js';
 
-const env = { APP_PASSWORD: 'testpassword', DB: null };
+const env = { APP_PASSWORD: 'testpassword', DB: createD1Mock() };
 
 function req(path, method = 'GET', body = null, cookies = '') {
   const headers = new Headers({ 'Content-Type': 'application/json' });
@@ -74,9 +75,9 @@ describe('auth middleware', () => {
     expect(res.status).toBe(401);
   });
 
-  test('GET /api/drafts with valid cookie returns 404 (not yet implemented)', async () => {
+  test('GET /api/drafts with valid cookie returns 200', async () => {
     const cookie = await loginCookie();
     const res = await worker.fetch(req('/api/drafts', 'GET', null, `session=${cookie}`), env);
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(200);
   });
 });
