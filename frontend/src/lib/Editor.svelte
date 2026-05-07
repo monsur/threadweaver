@@ -132,10 +132,8 @@
     <div
       bind:this={visualEditor}
       class="w-full h-full text-lg"
-      style="position:absolute;top:0;left:0;z-index:2;white-space:pre-wrap;word-wrap:break-word;border-radius:0.5rem;pointer-events:none;padding:1rem;padding-left:2.5rem;"
-    >
-      {@html visualHtml}
-    </div>
+      style="position:absolute;top:0;left:0;z-index:2;white-space:pre-wrap;word-wrap:break-word;text-align:left;border-radius:0.5rem;pointer-events:none;padding:1rem;padding-left:2.5rem;"
+    >{@html visualHtml}</div>
   </div>
 
   <div class="flex justify-between mt-4">
