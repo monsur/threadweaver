@@ -4,8 +4,8 @@
 
 | Field | Value |
 |---|---|
-| **Last updated** | 2026-05-06 |
-| **Last completed step** | Phase 2 complete (Step 2.4) |
+| **Last updated** | 2026-05-07 |
+| **Last completed step** | Phase 2 complete — all manual tests verified |
 | **Resume from** | Phase 3, Step 3.1 |
 | **Notes** | Playwright browser download unavailable in dev environment — run `npx playwright install chromium` on your local machine before running E2E tests |
 
