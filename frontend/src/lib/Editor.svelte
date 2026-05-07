@@ -121,7 +121,7 @@
     <textarea
       bind:this={textarea}
       class="w-full h-full bg-transparent text-lg border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      style="position:relative;z-index:10;resize:none;color:transparent;caret-color:#c9d1d9;overflow:hidden;padding:1rem;padding-left:2.5rem;clip-path:inset(0 0 0 2.5rem);"
+      style="position:relative;z-index:1;resize:none;color:transparent;caret-color:#c9d1d9;overflow:hidden;padding:1rem;padding-left:2.5rem;"
       placeholder="Start writing your post here..."
       value={content}
       oninput={onInput}
@@ -132,7 +132,7 @@
     <div
       bind:this={visualEditor}
       class="w-full h-full text-lg"
-      style="position:absolute;top:0;left:0;white-space:pre-wrap;word-wrap:break-word;border-radius:0.5rem;background-color:#161b22;pointer-events:none;padding:1rem;padding-left:2.5rem;"
+      style="position:absolute;top:0;left:0;z-index:2;white-space:pre-wrap;word-wrap:break-word;border-radius:0.5rem;pointer-events:none;padding:1rem;padding-left:2.5rem;"
     >
       {@html visualHtml}
     </div>
