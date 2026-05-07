@@ -171,7 +171,9 @@
     padding-left: 2.5rem;
   }
 
-  .post-prefix {
+  /* :global because these classes are injected via {@html} and don't
+     receive Svelte's scoping attribute. */
+  :global(.post-prefix) {
     position: absolute;
     left: 0.5rem;
     font-weight: bold;
@@ -186,7 +188,7 @@
     line-height: inherit;
   }
 
-  .overage {
+  :global(.overage) {
     color: #f87171;
   }
 
