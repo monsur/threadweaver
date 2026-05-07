@@ -17,17 +17,21 @@
   let currentChunkIndex = $derived(getCurrentChunkIndex(content, cursorPosition));
   let currentChunkDetails = $derived(getChunkDetails(chunks[currentChunkIndex] ?? ''));
 
+  const PREFIX_STYLE = 'position:absolute;left:0.5rem;font-weight:bold;color:#4b5563;cursor:pointer;pointer-events:auto;background:none;border:none;padding:0;font-size:inherit;font-family:inherit;line-height:inherit;';
+  const OVERAGE_STYLE = 'color:#f87171;';
+
   // Build visual HTML as a string to avoid Svelte template whitespace nodes
   // being rendered literally by white-space: pre-wrap.
+  // Use inline styles instead of classes to bypass Svelte CSS scoping.
   let visualHtml = $derived(
     chunks.map((chunk, i) => {
       const details = getChunkDetails(chunk);
       const sep = i > 0 ? '<br><br><br>' : '';
       const label = checkedPrefixIndex === i ? '&#x2713;' : `${i + 1}/`;
-      const btn = `<button class="post-prefix" data-chunk="${i}">${label}</button>`;
+      const btn = `<button style="${PREFIX_STYLE}" data-chunk="${i}">${label}</button>`;
       const safe = `<span>${escapeHtml(details.safeText)}</span>`;
       const overage = details.isOverage
-        ? `<span class="overage">${escapeHtml(details.overageText)}</span>`
+        ? `<span style="${OVERAGE_STYLE}">${escapeHtml(details.overageText)}</span>`
         : '';
       return `${sep}${btn}${safe}${overage}`;
     }).join('')
@@ -37,7 +41,7 @@
   $effect(() => {
     if (!visualEditor) return;
     void visualHtml; // re-run when HTML changes
-    visualEditor.querySelectorAll('.post-prefix').forEach(btn => {
+    visualEditor.querySelectorAll('[data-chunk]').forEach(btn => {
       btn.onclick = () => clickPrefix(Number(btn.dataset.chunk));
     });
   });
@@ -113,10 +117,11 @@
     <span class="text-sm text-gray-500">Chunk {currentChunkIndex + 1} of {chunks.length}</span>
   </div>
 
-  <div class="editor-container min-h-60">
+  <div class="min-h-60" style="position:relative;">
     <textarea
       bind:this={textarea}
       class="w-full h-full bg-transparent text-lg border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      style="position:relative;z-index:10;resize:none;color:transparent;caret-color:#c9d1d9;overflow:hidden;padding:1rem;padding-left:2.5rem;clip-path:inset(0 0 0 2.5rem);"
       placeholder="Start writing your post here..."
       value={content}
       oninput={onInput}
@@ -124,7 +129,11 @@
       onkeyup={onCursorMove}
     ></textarea>
 
-    <div bind:this={visualEditor} class="visual-editor w-full h-full text-lg">
+    <div
+      bind:this={visualEditor}
+      class="w-full h-full text-lg"
+      style="position:absolute;top:0;left:0;white-space:pre-wrap;word-wrap:break-word;border-radius:0.5rem;background-color:#161b22;pointer-events:none;padding:1rem;padding-left:2.5rem;"
+    >
       {@html visualHtml}
     </div>
   </div>
@@ -142,56 +151,6 @@
 </div>
 
 <style>
-  .editor-container {
-    position: relative;
-  }
-
-  .editor-container textarea {
-    position: relative;
-    z-index: 10;
-    resize: none;
-    color: transparent;
-    caret-color: #c9d1d9;
-    overflow: hidden;
-    padding: 1rem;
-    padding-left: 2.5rem;
-    clip-path: inset(0 0 0 2.5rem);
-  }
-
-  .visual-editor {
-    position: absolute;
-    top: 0;
-    left: 0;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    border-radius: 0.5rem;
-    background-color: #161b22;
-    pointer-events: none;
-    padding: 1rem;
-    padding-left: 2.5rem;
-  }
-
-  /* :global because these classes are injected via {@html} and don't
-     receive Svelte's scoping attribute. */
-  :global(.post-prefix) {
-    position: absolute;
-    left: 0.5rem;
-    font-weight: bold;
-    color: #4b5563;
-    cursor: pointer;
-    pointer-events: auto;
-    background: none;
-    border: none;
-    padding: 0;
-    font-size: inherit;
-    font-family: inherit;
-    line-height: inherit;
-  }
-
-  :global(.overage) {
-    color: #f87171;
-  }
-
   .btn {
     background-color: #2563eb;
     color: white;
