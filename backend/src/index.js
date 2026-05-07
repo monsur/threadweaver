@@ -9,7 +9,17 @@ function json(data, status = 200, extraHeaders = {}) {
 
 export default {
   async fetch(request, env) {
-    const { pathname } = new URL(request.url);
+    try {
+      return await handle(request, env);
+    } catch (err) {
+      console.error(`Unhandled error: ${request.method} ${request.url}\n`, err);
+      return json({ error: 'Internal server error' }, 500);
+    }
+  },
+};
+
+async function handle(request, env) {
+  const { pathname } = new URL(request.url);
 
     // POST /api/login — no auth required
     if (pathname === '/api/login' && request.method === 'POST') {
@@ -41,6 +51,5 @@ export default {
       return json({ error: 'Not found' }, 404);
     }
 
-    return new Response('Threadweaver API', { status: 200 });
-  },
-};
+  return new Response('Threadweaver API', { status: 200 });
+}
