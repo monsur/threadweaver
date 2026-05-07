@@ -5,8 +5,8 @@
 | Field | Value |
 |---|---|
 | **Last updated** | 2026-05-07 |
-| **Last completed step** | Phase 2 complete — all manual tests verified |
-| **Resume from** | Phase 3, Step 3.1 |
+| **Last completed step** | Phase 3 complete (Step 3.5) |
+| **Resume from** | Phase 4, Step 4.1 |
 | **Notes** | Playwright browser download unavailable in dev environment — run `npx playwright install chromium` on your local machine before running E2E tests |
 
 > Update this table at the end of each work session before stopping.
@@ -178,49 +178,49 @@ Before moving to Phase 2, confirm all of the following:
 
 ### Step 3.1 — Write the D1 drafts schema migration
 
-- [ ] Create `backend/migrations/0001_create_drafts.sql` with the drafts table
-- [ ] Run `npx wrangler d1 migrations apply threadweaver-db --local`
-- [ ] **Verify:** `npx wrangler d1 execute threadweaver-db --local --command "SELECT * FROM drafts"` returns empty set without error
-- [ ] **Manual validation:** No SQL errors in terminal output
+- [x] Create `backend/migrations/0001_create_drafts.sql` with the drafts table
+- [x] Run `npx wrangler d1 migrations apply threadweaver-db --local`
+- [x] **Verify:** `npx wrangler d1 execute threadweaver-db --local --command "SELECT * FROM drafts"` returns empty set without error
+- [x] **Manual validation:** No SQL errors in terminal output (done in Phase 1)
 
 ---
 
 ### Step 3.2 — Implement cookie signing utilities
 
-- [ ] Create `backend/src/lib/auth.js` with `signCookie(password)` and `verifyCookie(cookieValue, password)` using the Web Crypto API
-- [ ] Install Vitest in `backend/`: `npm install -D vitest`
-- [ ] Write tests in `backend/src/lib/__tests__/auth.test.js`:
-  - [ ] Cookie signed with "abc" verifies with "abc"
-  - [ ] Cookie signed with "abc" fails verification with "xyz"
-  - [ ] Cookie with past expiry fails verification
-  - [ ] Tampered cookie value fails verification
-- [ ] **Verify:** `npm test` in `backend/` passes all auth cases
-- [ ] **Manual validation:** No browser check needed — logic only
+- [x] Create `backend/src/lib/auth.js` with `signCookie(password)` and `verifyCookie(cookieValue, password)` using the Web Crypto API
+- [x] Install Vitest in `backend/`: `npm install -D vitest`
+- [x] Write tests in `backend/src/lib/__tests__/auth.test.js`:
+  - [x] Cookie signed with "abc" verifies with "abc"
+  - [x] Cookie signed with "abc" fails verification with "xyz"
+  - [x] Cookie with past expiry fails verification
+  - [x] Tampered cookie value fails verification
+- [x] **Verify:** `npm test` in `backend/` passes all auth cases
+- [x] **Manual validation:** No browser check needed — logic only
 
 ---
 
 ### Step 3.3 — Implement `POST /api/login`
 
-- [ ] Add `POST /api/login` route to `backend/src/index.js`
-- [ ] Implement constant-time password comparison
-- [ ] On match: set signed `session` cookie (HttpOnly, SameSite=Strict), return 200
-- [ ] On mismatch: return 401
-- [ ] Write integration tests in `backend/src/__tests__/login.test.js`:
-  - [ ] Correct password → 200 + `Set-Cookie` header
-  - [ ] Wrong password → 401, no cookie
-  - [ ] Missing body → 400
-- [ ] **Verify:** `npm test` in `backend/` passes
-- [ ] **Manual validation:** `curl -X POST localhost:8787/api/login -H "Content-Type: application/json" -d '{"password":"test"}'` returns 200 and a `Set-Cookie` header
+- [x] Add `POST /api/login` route to `backend/src/index.js`
+- [x] Implement constant-time password comparison
+- [x] On match: set signed `session` cookie (HttpOnly, SameSite=Strict), return 200
+- [x] On mismatch: return 401
+- [x] Write integration tests in `backend/src/__tests__/login.test.js`:
+  - [x] Correct password → 200 + `Set-Cookie` header
+  - [x] Wrong password → 401, no cookie
+  - [x] Missing body → 400
+- [x] **Verify:** `npm test` in `backend/` passes
+- [ ] **Manual validation:** `curl -X POST localhost:8787/api/login -H "Content-Type: application/json" -d '{"password":"password"}'` returns 200 and a `Set-Cookie` header
 
 ---
 
 ### Step 3.4 — Implement auth middleware
 
-- [ ] Add `requireAuth` middleware to `backend/src/lib/auth.js`
-- [ ] Apply middleware to all `/api/*` routes except `/api/login`
-- [ ] Add `GET /api/me` endpoint — returns 200 if authenticated, 401 if not
-- [ ] Write integration test: `GET /api/drafts` without a valid cookie returns 401
-- [ ] **Verify:** `npm test` in `backend/` passes
+- [x] Add `requireAuth` middleware to `backend/src/lib/auth.js`
+- [x] Apply middleware to all `/api/*` routes except `/api/login`
+- [x] Add `GET /api/me` endpoint — returns 200 if authenticated, 401 if not
+- [x] Write integration test: `GET /api/drafts` without a valid cookie returns 401
+- [x] **Verify:** `npm test` in `backend/` passes
 - [ ] **Manual validation:**
   - [ ] `curl localhost:8787/api/drafts` (no cookie) returns 401
   - [ ] `curl localhost:8787/api/me` (no cookie) returns 401
@@ -229,12 +229,12 @@ Before moving to Phase 2, confirm all of the following:
 
 ### Step 3.5 — Build the Login UI
 
-- [ ] Create `frontend/src/lib/Login.svelte` with password input, submit button, and error message
-- [ ] Support Enter key submission
-- [ ] On success: emit an event to show the main app
-- [ ] On failure: show "Incorrect password" message
-- [ ] Update `App.svelte` to call `GET /api/me` on load and show `Login` or `Editor` based on result
-- [ ] **Verify:** `npm test` passes
+- [x] Create `frontend/src/lib/Login.svelte` with password input, submit button, and error message
+- [x] Support Enter key submission
+- [x] On success: emit an event to show the main app
+- [x] On failure: show "Incorrect password" message
+- [x] Update `App.svelte` to call `GET /api/me` on load and show `Login` or `Editor` based on result
+- [x] **Verify:** `npm test` passes
 - [ ] **Manual validation:**
   - [ ] Load app — login screen appears
   - [ ] Enter wrong password — "Incorrect password" message appears
@@ -246,10 +246,10 @@ Before moving to Phase 2, confirm all of the following:
 
 ### ✓ Phase 3 Checkpoint
 
-- [ ] All backend tests pass (`npm test` in `backend/`)
-- [ ] All frontend tests pass (`npm test` in `frontend/`)
+- [x] All backend tests pass (`npm test` in `backend/`)
+- [x] All frontend tests pass (`npm test` in `frontend/`)
 - [ ] Login → editor flow works end-to-end in the browser
-- [ ] Unauthenticated requests to `/api/*` return 401
+- [x] Unauthenticated requests to `/api/*` return 401
 - [ ] Cookie persists across page reloads
 - [ ] **Update the Progress Tracker**
 
