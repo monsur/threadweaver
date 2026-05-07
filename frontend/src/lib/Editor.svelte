@@ -17,20 +17,51 @@
   let currentChunkIndex = $derived(getCurrentChunkIndex(content, cursorPosition));
   let currentChunkDetails = $derived(getChunkDetails(chunks[currentChunkIndex] ?? ''));
 
+  // Build visual HTML as a string to avoid Svelte template whitespace nodes
+  // being rendered literally by white-space: pre-wrap.
+  let visualHtml = $derived(
+    chunks.map((chunk, i) => {
+      const details = getChunkDetails(chunk);
+      const sep = i > 0 ? '<br><br><br>' : '';
+      const label = checkedPrefixIndex === i ? '&#x2713;' : `${i + 1}/`;
+      const btn = `<button class="post-prefix" data-chunk="${i}">${label}</button>`;
+      const safe = `<span>${escapeHtml(details.safeText)}</span>`;
+      const overage = details.isOverage
+        ? `<span class="overage">${escapeHtml(details.overageText)}</span>`
+        : '';
+      return `${sep}${btn}${safe}${overage}`;
+    }).join('')
+  );
+
+  // Wire up prefix click handlers after each visual HTML update.
+  $effect(() => {
+    if (!visualEditor) return;
+    void visualHtml; // re-run when HTML changes
+    visualEditor.querySelectorAll('.post-prefix').forEach(btn => {
+      btn.onclick = () => clickPrefix(Number(btn.dataset.chunk));
+    });
+  });
+
   $effect(() => {
     localStorage.setItem(STORAGE_KEY, content);
   });
 
-  // Auto-resize textarea and visual editor to match content height
+  // Auto-resize textarea and visual editor to match content height.
   $effect(() => {
     if (!textarea) return;
-    // Read content to make this effect depend on it
     void content;
     textarea.style.height = 'auto';
     const h = textarea.scrollHeight + 'px';
     textarea.style.height = h;
     if (visualEditor) visualEditor.style.height = h;
   });
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
 
   function onInput(e) {
     content = e.target.value;
@@ -94,13 +125,7 @@
     ></textarea>
 
     <div bind:this={visualEditor} class="visual-editor w-full h-full text-lg">
-      {#each chunks as chunk, i}
-        {#if i > 0}<br><br><br>{/if}
-        {@const details = getChunkDetails(chunk)}
-        <button class="post-prefix" onclick={() => clickPrefix(i)}>
-          {checkedPrefixIndex === i ? '✓' : `${i + 1}/`}
-        </button><span>{details.safeText}</span>{#if details.isOverage}<span class="overage">{details.overageText}</span>{/if}
-      {/each}
+      {@html visualHtml}
     </div>
   </div>
 
