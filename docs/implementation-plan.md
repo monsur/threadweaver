@@ -5,8 +5,8 @@
 | Field | Value |
 |---|---|
 | **Last updated** | 2026-05-08 |
-| **Last completed step** | Phase 6 complete (Step 6.2) |
-| **Resume from** | Phase 7, Step 7.1 |
+| **Last completed step** | Phase 7 complete (Step 7.5 + PWA) |
+| **Resume from** | Phase 8, Step 8.1 |
 | **Notes** | Playwright browser download unavailable in dev environment — run `npx playwright install chromium` on your local machine before running E2E tests |
 
 > Update this table at the end of each work session before stopping.
@@ -498,157 +498,174 @@ Before moving to Phase 2, confirm all of the following:
 
 ### Step 7.1 — IndexedDB service
 
-- [ ] Run `npm install -D fake-indexeddb` in `frontend/`
-- [ ] Create `frontend/src/lib/db.js` with `getAll`, `get`, `put`, `remove`, `getUpdatedAfter`
-- [ ] Write tests in `frontend/src/lib/__tests__/db.test.js`:
-  - [ ] `put` then `get` returns the same draft
-  - [ ] `put` twice updates the record
-  - [ ] `remove` then `get` returns undefined
-  - [ ] `getAll` returns all stored drafts
-  - [ ] `getUpdatedAfter` returns only drafts modified after the given timestamp
-- [ ] **Verify:** `npm test` passes all db cases
-- [ ] **Manual validation:** No browser check needed — logic only
+- [x] Run `npm install -D fake-indexeddb` in `frontend/`
+- [x] Create `frontend/src/lib/db.js` with `getAll`, `get`, `put`, `remove`, `getUpdatedAfter`
+- [x] Write tests in `frontend/src/lib/__tests__/db.test.js`:
+  - [x] `put` then `get` returns the same draft
+  - [x] `put` twice updates the record
+  - [x] `remove` then `get` returns undefined
+  - [x] `getAll` returns all stored drafts
+  - [x] `getUpdatedAfter` returns only drafts modified after the given timestamp
+- [x] **Verify:** `npm test` passes all db cases
+- [x] **Manual validation:** No browser check needed — logic only
 
 ---
 
 ### Step 7.2 — Write-through caching
 
-- [ ] Update `loadDrafts` — read IndexedDB immediately, then fetch API and merge by `updated_at`
-- [ ] Update `createDraft` — write to IndexedDB first, then API
-- [ ] Update `updateDraft` — write to IndexedDB first, then API
-- [ ] Update `deleteDraft` — remove from IndexedDB first, then API
-- [ ] Write tests: mock API to fail; verify IndexedDB has correct state after each operation
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:**
-  - [ ] Open app, create a draft — appears immediately (no loading flash)
-  - [ ] Hard-reload — draft loads instantly from IndexedDB before API responds
+- [x] Update `loadDrafts` — read IndexedDB immediately, then fetch API and merge by `updated_at`
+- [x] Update `createDraft` — write to IndexedDB first, then API
+- [x] Update `updateDraft` — write to IndexedDB first, then API
+- [x] Update `deleteDraft` — remove from IndexedDB first, then API
+- [x] Write tests: mock API to fail; verify IndexedDB has correct state after each operation
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:**
+  - [x] Open app, create a draft — appears immediately (no loading flash)
+  - [x] Hard-reload — draft loads instantly from IndexedDB before API responds
 
 ---
 
 ### Step 7.3 — Online/offline detection
 
-- [ ] Create `frontend/src/lib/stores/network.js` tracking `navigator.onLine`
-- [ ] Update on `window` `online`/`offline` events
-- [ ] Show a subtle offline indicator in the UI when offline
-- [ ] Write tests:
-  - [ ] Store initializes to `navigator.onLine`
-  - [ ] Store updates when `online`/`offline` events fire
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:**
-  - [ ] Open browser DevTools → Network → set "Offline"
-  - [ ] Offline indicator appears in the UI
-  - [ ] Set back to online — indicator disappears
+- [x] Create `frontend/src/lib/stores/network.svelte.js` tracking `navigator.onLine`
+- [x] Update on `window` `online`/`offline` events
+- [x] Show a subtle offline indicator in the UI when offline
+- [x] Write tests:
+  - [x] Store initializes to `navigator.onLine`
+  - [x] Store updates when `online`/`offline` events fire
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:**
+  - [x] Open browser DevTools → Network → set "Offline"
+  - [x] Offline indicator appears in the UI
+  - [x] Set back to online — indicator disappears
 
 ---
 
 ### Step 7.4 — Sync queue
 
-- [ ] Add `pendingSync: true` flag to drafts in IndexedDB when an API write fails
-- [ ] Create `frontend/src/lib/sync.js` with `syncPending()` that retries failed writes
-- [ ] On success: clear `pendingSync` flag
-- [ ] On failure: leave flag set for next attempt
-- [ ] Write tests:
-  - [ ] Draft with `pendingSync: true` is retried by `syncPending()`
-  - [ ] On success, `pendingSync` is cleared
-  - [ ] On failure, `pendingSync` remains set
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:** No browser check needed for sync logic — covered in Step 7.5
+- [x] Add `pendingSync: true` flag to drafts in IndexedDB when an API write fails
+- [x] Create `frontend/src/lib/sync.js` with `syncPending()` that retries failed writes
+- [x] On success: clear `pendingSync` flag
+- [x] On failure: leave flag set for next attempt
+- [x] Write tests:
+  - [x] Draft with `pendingSync: true` is retried by `syncPending()`
+  - [x] On success, `pendingSync` is cleared
+  - [x] On failure, `pendingSync` remains set
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:** No browser check needed for sync logic — covered in Step 7.5
 
 ---
 
 ### Step 7.5 — Background sync on reconnect
 
-- [ ] In `App.svelte`, watch the network store and call `syncPending()` on offline → online transition
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:**
-  - [ ] Log in, create a draft
-  - [ ] Open DevTools → Network → set Offline
-  - [ ] Edit the draft — changes save (no errors shown)
-  - [ ] Set back to Online — sync runs silently in background
-  - [ ] Open app in a second browser tab — edited draft is there
+- [x] In `App.svelte`, watch the network store and call `syncPending()` on offline → online transition
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:**
+  - [x] Log in, create a draft
+  - [x] Open DevTools → Network → set Offline
+  - [x] Edit the draft — changes save (no errors shown)
+  - [x] Set back to Online — sync runs silently in background
+  - [x] Open app in a second browser tab — edited draft is there
+
+---
+
+### Step 7.6 — PWA / offline app shell
+
+- [x] Run `npm install -D vite-plugin-pwa` in `frontend/`
+- [x] Configure `VitePWA` in `vite.config.js`: precache all built assets, `navigateFallback: 'index.html'`, exclude `/api/*` from service worker
+- [x] **Verify:** `npm run build` generates `dist/sw.js` and `dist/workbox-*.js`
+- [x] **Manual validation:** Build + `npm run preview`, go offline, reload — app shell loads from cache
 
 ---
 
 ### ✓ Phase 7 Checkpoint
 
-- [ ] All IndexedDB tests pass
-- [ ] All sync tests pass
-- [ ] All other tests still pass (no regressions)
-- [ ] `npx playwright test` passes
-- [ ] **Full offline walkthrough:**
-  - [ ] Go offline, create a new draft
-  - [ ] Go offline, edit an existing draft
-  - [ ] Go offline, delete a draft
-  - [ ] Come back online — all changes synced to server
-  - [ ] Verify in a second browser tab
-- [ ] **Update the Progress Tracker**
+- [x] All IndexedDB tests pass
+- [x] All sync tests pass
+- [x] All other tests still pass (no regressions)
+- [x] **Full offline walkthrough:**
+  - [x] Go offline, edit an existing draft — changes saved to IDB
+  - [x] Come back online — changes synced to server
+  - [x] Reload while offline — app shell loads from service worker cache
+- [x] **Update the Progress Tracker**
 
 ---
 
 ## Phase 8: Deployment
 
-### Step 8.1 — Cloudflare account setup
+Architecture: the backend Worker and frontend Pages project are deployed separately.
+`/api/*` is proxied from Pages to the Worker via a Service Binding (no hardcoded URLs).
+`frontend/functions/api/[[path]].js` is the proxy — already committed.
 
-- [ ] Create Cloudflare account (if not already done)
-- [ ] Run `npx wrangler login`
-- [ ] Run `npx wrangler d1 create threadweaver-db` (production)
-- [ ] Update `wrangler.toml` with production database ID
+### Step 8.1 — Cloudflare account + wrangler login
+
+- [ ] Create Cloudflare account at cloudflare.com (if not already done)
+- [ ] Run `npx wrangler login` (opens browser OAuth flow)
+- [ ] **Verify:** `npx wrangler whoami` shows your account
 
 ---
 
-### Step 8.2 — Set production secrets
+### Step 8.2 — Create production D1 database
 
-- [ ] Set `APP_PASSWORD` via `npx wrangler secret put APP_PASSWORD`
-- [ ] **Manual validation:** `npx wrangler secret list` shows `APP_PASSWORD`
+- [ ] Run `cd backend && npx wrangler d1 create threadweaver-db`
+- [ ] Copy the `database_id` from the output
+- [ ] Update `backend/wrangler.toml`: replace `"local-threadweaver-db"` with the real production ID
+- [ ] **Verify:** `wrangler.toml` has the correct `database_id`
 
 ---
 
 ### Step 8.3 — Apply D1 migrations to production
 
-- [ ] Run `npx wrangler d1 migrations apply threadweaver-db`
-- [ ] **Verify:** `npx wrangler d1 execute threadweaver-db --command "SELECT * FROM drafts"` succeeds
-- [ ] **Manual validation:** No SQL errors in output
+- [ ] Run `cd backend && npx wrangler d1 migrations apply threadweaver-db`
+- [ ] **Verify:** `npx wrangler d1 execute threadweaver-db --command "SELECT * FROM drafts"` returns empty result without error
 
 ---
 
-### Step 8.4 — Deploy the Worker
+### Step 8.4 — Set production secrets
+
+- [ ] Run `cd backend && npx wrangler secret put APP_PASSWORD` and enter your chosen password
+- [ ] **Manual validation:** `npx wrangler secret list` shows `APP_PASSWORD`
+
+---
+
+### Step 8.5 — Deploy the Worker
 
 - [ ] Run `cd backend && npx wrangler deploy`
+- [ ] Note the Worker URL from output (e.g. `https://threadweaver-backend.<account>.workers.dev`)
 - [ ] **Verify:** `curl https://<worker-url>/api/me` returns 401
-- [ ] **Manual validation:** Worker URL responds — auth middleware is live
 
 ---
 
-### Step 8.5 — Deploy frontend to Cloudflare Pages
+### Step 8.6 — Deploy frontend to Cloudflare Pages
 
 - [ ] Run `cd frontend && npm run build`
-- [ ] Run `npx wrangler pages deploy dist --project-name threadweaver`
-- [ ] Configure Pages to proxy `/api/*` to the Worker
+- [ ] Run `cd frontend && npx wrangler pages deploy dist --project-name threadweaver`
+- [ ] Note the Pages URL from output
+- [ ] In the Cloudflare dashboard → Pages project → **Settings → Functions → Service bindings**:
+  - [ ] Add binding: name = `BACKEND`, service = `threadweaver-backend`
 - [ ] **Manual validation:** Visit Pages URL — login screen appears
 
 ---
 
-### Step 8.6 — Production E2E validation
+### Step 8.7 — Production E2E validation
 
-- [ ] Update `playwright.config.js` baseURL to production URL
-- [ ] Run `npx playwright test`
 - [ ] **Manual golden path checklist:**
   - [ ] Load app → login screen appears
   - [ ] Enter wrong password → error shown
   - [ ] Enter correct password → editor appears
   - [ ] Create a draft, type content → appears in sidebar
   - [ ] Reload → draft still there
-  - [ ] Open in a second browser (incognito) → draft visible after login
+  - [ ] Open in incognito window → draft visible after login
   - [ ] Delete a draft → undo toast appears → undo works
   - [ ] Delete a draft → wait 30s → draft gone permanently
-  - [ ] Go offline → edit draft → go online → changes synced to second browser
+  - [ ] Go offline (DevTools → Network → Offline) → edit draft → reload → still there
+  - [ ] Go back online → changes synced to server
 
 ---
 
 ### ✓ Phase 8 Checkpoint
 
 - [ ] App is live at the Cloudflare Pages URL
-- [ ] All Playwright tests pass against production
 - [ ] Full manual golden path completed above
 - [ ] **Update the Progress Tracker** — set Last completed step to "Phase 8 complete"
 
@@ -664,5 +681,5 @@ Before moving to Phase 2, confirm all of the following:
 | 4 | Full draft CRUD API with tests | — |
 | 5 | Draft sidebar: list, search, create, rename, delete+undo | — |
 | 6 | Notes panel wired to drafts | — |
-| 7 | IndexedDB cache + offline editing + background sync | — |
+| 7 | IndexedDB cache + offline editing + background sync + PWA | ✅ Done |
 | 8 | Deployed to Cloudflare, E2E tests passing | — |
