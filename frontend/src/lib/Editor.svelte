@@ -1,17 +1,38 @@
 <script>
+  import { untrack } from 'svelte';
   import { getChunkDetails } from './charCount.js';
   import { splitChunks, getCurrentChunkIndex } from './chunks.js';
+  import { updateDraft } from './stores/drafts.svelte.js';
+
+  const { draft = null } = $props();
 
   const CHARACTER_LIMIT = 300;
-  const STORAGE_KEY = 'bluesky-post-content';
 
-  let content = $state(localStorage.getItem(STORAGE_KEY) ?? '');
+  let content = $state(draft?.content ?? '');
+  let title = $state(draft?.title ?? 'Untitled');
+  let editingTitle = $state(false);
   let cursorPosition = $state(0);
   let copyAllActive = $state(false);
   let checkedPrefixIndex = $state(null);
+  let saveTimer = null;
 
   let textarea = $state(null);
+  let titleInput = $state(null);
   let visualEditor = $state(null);
+
+  // Reset local state when switching to a different draft.
+  // Only track draft.id as a dependency so typing (which changes draft.content
+  // via debounced save) doesn't clobber what the user is currently typing.
+  $effect(() => {
+    const id = draft?.id;
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    untrack(() => {
+      content = draft?.content ?? '';
+      title = draft?.title ?? 'Untitled';
+      editingTitle = false;
+    });
+  });
 
   let chunks = $derived(splitChunks(content));
   let currentChunkIndex = $derived(getCurrentChunkIndex(content, cursorPosition));
@@ -20,9 +41,6 @@
   const PREFIX_STYLE = 'position:absolute;left:0.5rem;font-weight:bold;color:#4b5563;cursor:pointer;pointer-events:auto;background:none;border:none;padding:0;font-size:inherit;font-family:inherit;line-height:inherit;';
   const OVERAGE_STYLE = 'color:#f87171;';
 
-  // Build visual HTML as a string to avoid Svelte template whitespace nodes
-  // being rendered literally by white-space: pre-wrap.
-  // Use inline styles instead of classes to bypass Svelte CSS scoping.
   let visualHtml = $derived(
     chunks.map((chunk, i) => {
       const details = getChunkDetails(chunk);
@@ -37,20 +55,14 @@
     }).join('')
   );
 
-  // Wire up prefix click handlers after each visual HTML update.
   $effect(() => {
     if (!visualEditor) return;
-    void visualHtml; // re-run when HTML changes
+    void visualHtml;
     visualEditor.querySelectorAll('[data-chunk]').forEach(btn => {
       btn.onclick = () => clickPrefix(Number(btn.dataset.chunk));
     });
   });
 
-  $effect(() => {
-    localStorage.setItem(STORAGE_KEY, content);
-  });
-
-  // Auto-resize textarea and visual editor to match content height.
   $effect(() => {
     if (!textarea) return;
     void content;
@@ -67,13 +79,40 @@
       .replace(/>/g, '&gt;');
   }
 
+  function scheduleAutoSave() {
+    if (!draft?.id) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      updateDraft(draft.id, { content, title });
+    }, 500);
+  }
+
   function onInput(e) {
     content = e.target.value;
     cursorPosition = e.target.selectionStart ?? 0;
+    scheduleAutoSave();
   }
 
   function onCursorMove(e) {
     cursorPosition = e.target.selectionStart ?? 0;
+  }
+
+  function startEditTitle() {
+    editingTitle = true;
+    setTimeout(() => titleInput?.focus(), 0);
+  }
+
+  async function saveTitle() {
+    editingTitle = false;
+    if (draft?.id) {
+      clearTimeout(saveTimer);
+      await updateDraft(draft.id, { title, content });
+    }
+  }
+
+  function onTitleKeydown(e) {
+    if (e.key === 'Enter') { e.preventDefault(); saveTitle(); }
+    if (e.key === 'Escape') { title = draft?.title ?? 'Untitled'; editingTitle = false; }
   }
 
   function copyAll() {
@@ -86,7 +125,7 @@
 
   function clear() {
     content = '';
-    localStorage.removeItem(STORAGE_KEY);
+    scheduleAutoSave();
   }
 
   function clickPrefix(index) {
@@ -110,6 +149,28 @@
 </script>
 
 <div class="w-full bg-slate-800 rounded-lg shadow-lg p-6 mb-8">
+  <!-- Editable title -->
+  <div class="mb-4">
+    {#if editingTitle}
+      <input
+        bind:this={titleInput}
+        bind:value={title}
+        onblur={saveTitle}
+        onkeydown={onTitleKeydown}
+        class="w-full bg-transparent border-b border-slate-600 focus:outline-none focus:border-blue-500 pb-1"
+        style="color:#f1f5f9;font-size:1.5rem;font-weight:700;"
+      />
+    {:else}
+      <button
+        onclick={startEditTitle}
+        class="text-left w-full"
+        style="background:none;border:none;padding:0;cursor:pointer;color:#f1f5f9;font-size:1.5rem;font-weight:700;padding-bottom:0.25rem;border-bottom:1px solid transparent;"
+      >
+        {title || 'Untitled'}
+      </button>
+    {/if}
+  </div>
+
   <div class="flex justify-between items-center mb-2">
     <span class="text-sm font-semibold {currentChunkDetails.isOverage ? 'text-red-400' : 'text-gray-400'}">
       {currentChunkDetails.length}/{CHARACTER_LIMIT}
