@@ -10,6 +10,8 @@
 
   let content = $state(draft?.content ?? '');
   let title = $state(draft?.title ?? 'Untitled');
+  let notes = $state(draft?.notes ?? '');
+  let notesExpanded = $state(true);
   let editingTitle = $state(false);
   let cursorPosition = $state(0);
   let copyAllActive = $state(false);
@@ -30,6 +32,7 @@
     untrack(() => {
       content = draft?.content ?? '';
       title = draft?.title ?? 'Untitled';
+      notes = draft?.notes ?? '';
       editingTitle = false;
     });
   });
@@ -83,7 +86,7 @@
     if (!draft?.id) return;
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-      updateDraft(draft.id, { content, title });
+      updateDraft(draft.id, { content, title, notes });
     }, 500);
   }
 
@@ -97,6 +100,11 @@
     cursorPosition = e.target.selectionStart ?? 0;
   }
 
+  function onNotesInput(e) {
+    notes = e.target.value;
+    scheduleAutoSave();
+  }
+
   function startEditTitle() {
     editingTitle = true;
     setTimeout(() => titleInput?.focus(), 0);
@@ -106,7 +114,7 @@
     editingTitle = false;
     if (draft?.id) {
       clearTimeout(saveTimer);
-      await updateDraft(draft.id, { title, content });
+      await updateDraft(draft.id, { title, content, notes });
     }
   }
 
@@ -206,6 +214,29 @@
     >
       {copyAllActive ? 'Copied!' : 'Copy All Posts'}
     </button>
+  </div>
+
+  <!-- Notes panel -->
+  <div style="margin-top:1.5rem;border-top:1px solid #334155;padding-top:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:{notesExpanded ? '0.625rem' : '0'};">
+      <span style="color:#94a3b8;font-size:0.875rem;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;">Notes</span>
+      <button
+        onclick={() => notesExpanded = !notesExpanded}
+        style="background:none;border:none;color:#64748b;cursor:pointer;font-size:0.75rem;padding:0.125rem 0.375rem;border-radius:0.25rem;"
+        aria-label={notesExpanded ? 'Collapse notes' : 'Expand notes'}
+      >
+        {notesExpanded ? '▲ Hide' : '▼ Show'}
+      </button>
+    </div>
+    {#if notesExpanded}
+      <textarea
+        value={notes}
+        oninput={onNotesInput}
+        placeholder="Private notes — not published. Jot down ideas, sources, or raw material here."
+        class="w-full bg-slate-900 text-base border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        style="resize:vertical;color:#c9d1d9;padding:0.75rem;min-height:6rem;font-family:inherit;"
+      ></textarea>
+    {/if}
   </div>
 </div>
 

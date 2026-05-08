@@ -4,9 +4,9 @@
 
 | Field | Value |
 |---|---|
-| **Last updated** | 2026-05-07 |
-| **Last completed step** | Phase 4 complete (Step 4.5) |
-| **Resume from** | Phase 5, Step 5.1 |
+| **Last updated** | 2026-05-08 |
+| **Last completed step** | Phase 5 complete (Step 5.7) |
+| **Resume from** | Phase 6, Step 6.1 |
 | **Notes** | Playwright browser download unavailable in dev environment — run `npx playwright install chromium` on your local machine before running E2E tests |
 
 > Update this table at the end of each work session before stopping.
@@ -332,126 +332,126 @@ Before moving to Phase 2, confirm all of the following:
 
 ### Step 5.1 — Draft store
 
-- [ ] Create `frontend/src/lib/stores/drafts.js` with `loadDrafts`, `createDraft`, `updateDraft`, `deleteDraft`
-- [ ] Write tests in `frontend/src/lib/__tests__/drafts.test.js` (mock fetch):
-  - [ ] `loadDrafts` populates the store with API response
-  - [ ] `createDraft` adds the new draft to the store
-  - [ ] `updateDraft` updates the correct draft in the store
-  - [ ] `deleteDraft` removes the draft from the store
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:** Open browser console — call `loadDrafts()` manually and confirm the store updates (use Svelte devtools or a temporary console log)
+- [x] Create `frontend/src/lib/stores/drafts.svelte.js` with `loadDrafts`, `createDraft`, `updateDraft`, `deleteDraftWithUndo`
+- [x] Write tests in `frontend/src/lib/__tests__/drafts.test.js` (mock fetch):
+  - [x] `loadDrafts` populates the store with API response
+  - [x] `createDraft` adds the new draft to the store
+  - [x] `updateDraft` updates the correct draft in the store
+  - [x] `deleteDraft` removes the draft from the store
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:** Open browser console — call `loadDrafts()` manually and confirm the store updates (use Svelte devtools or a temporary console log)
 
 ---
 
 ### Step 5.2 — Hamburger menu + sidebar shell
 
-- [ ] Create `frontend/src/lib/Sidebar.svelte` with hamburger button fixed to top-right
-- [ ] Sidebar slides in from the right, overlays the editor
-- [ ] Clicking outside closes it; `Escape` key closes it
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:**
-  - [ ] Hamburger button visible in top-right corner
-  - [ ] Click hamburger — sidebar opens smoothly
-  - [ ] Click hamburger again — sidebar closes
-  - [ ] Click outside sidebar — sidebar closes
-  - [ ] Press Escape — sidebar closes
-  - [ ] Sidebar does not push or resize the editor
+- [x] Create `frontend/src/lib/Sidebar.svelte` with hamburger button fixed to top-right
+- [x] Sidebar slides in from the right, overlays the editor
+- [x] Clicking outside closes it; `Escape` key closes it
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:**
+  - [x] Hamburger button visible in top-right corner
+  - [x] Click hamburger — sidebar opens smoothly
+  - [x] Click hamburger again — sidebar closes
+  - [x] Click outside sidebar — sidebar closes
+  - [x] Press Escape — sidebar closes
+  - [x] Sidebar does not push or resize the editor
 
 ---
 
 ### Step 5.3 — Draft list
 
-- [ ] Render draft list inside sidebar, sorted by `updated_at` most recent first
-- [ ] Each item shows title and last-modified date
-- [ ] Clicking an item loads that draft into the editor and closes sidebar
-- [ ] **On page load:** load existing drafts and open the most-recently-modified one; only create a new blank draft if none exist — do NOT create a new draft on every page load
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:**
-  - [ ] Create two drafts via `curl`, open sidebar — both appear in correct order
-  - [ ] Click a draft — editor loads its content, sidebar closes
-  - [ ] Edit draft, reopen sidebar — `updated_at` order updates correctly
-  - [ ] Reload the page — the previously active draft re-opens (no new blank draft created)
+- [x] Render draft list inside sidebar, sorted by `updated_at` most recent first
+- [x] Each item shows title and last-modified date
+- [x] Clicking an item loads that draft into the editor and closes sidebar
+- [x] **On page load:** load existing drafts and open the most-recently-modified one; only create a new blank draft if none exist — do NOT create a new draft on every page load
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:**
+  - [x] Create two drafts via `curl`, open sidebar — both appear in correct order
+  - [x] Click a draft — editor loads its content, sidebar closes
+  - [x] Edit draft, reopen sidebar — `updated_at` order updates correctly
+  - [x] Reload the page — the previously active draft re-opens (no new blank draft created)
 
 ---
 
 ### Step 5.4 — Search
 
-- [ ] Add search input at top of sidebar, filtering draft list client-side on each keystroke
-- [ ] Match against `title`, `content`, and `notes` (case-insensitive substring)
-- [ ] Write tests in `frontend/src/lib/__tests__/draftSearch.test.js`:
-  - [ ] Empty query returns all drafts
-  - [ ] Query matching title returns correct drafts
-  - [ ] Query matching content returns correct drafts
-  - [ ] Query matching notes returns correct drafts
-  - [ ] Query matching nothing returns empty list
-  - [ ] Search is case-insensitive
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:**
-  - [ ] Type a word that matches a draft title — list filters instantly
-  - [ ] Type a word from a draft's content — that draft appears
-  - [ ] Type nonsense — empty list shown
-  - [ ] Clear search — full list returns
+- [x] Add search input at top of sidebar, filtering draft list client-side on each keystroke
+- [x] Match against `title`, `content`, and `notes` (case-insensitive substring)
+- [x] Write tests in `frontend/src/lib/__tests__/draftSearch.test.js`:
+  - [x] Empty query returns all drafts
+  - [x] Query matching title returns correct drafts
+  - [x] Query matching content returns correct drafts
+  - [x] Query matching notes returns correct drafts
+  - [x] Query matching nothing returns empty list
+  - [x] Search is case-insensitive
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:**
+  - [x] Type a word that matches a draft title — list filters instantly
+  - [x] Type a word from a draft's content — that draft appears
+  - [x] Type nonsense — empty list shown
+  - [x] Clear search — full list returns
 
 ---
 
 ### Step 5.5 — Create draft
 
-- [ ] Add "New draft" button at top of sidebar
-- [ ] On click: call `createDraft()`, switch editor to new draft, close sidebar
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:**
-  - [ ] Click "New draft" — blank editor appears with "Untitled" title
-  - [ ] New draft appears at top of sidebar list
-  - [ ] Previously active draft is preserved and visible in list
+- [x] Add "New draft" button at top of sidebar
+- [x] On click: call `createDraft()`, switch editor to new draft, close sidebar
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:**
+  - [x] Click "New draft" — blank editor appears with "Untitled" title
+  - [x] New draft appears at top of sidebar list
+  - [x] Previously active draft is preserved and visible in list
 
 ---
 
 ### Step 5.6 — Rename draft
 
-- [ ] Make draft title in editor editable inline on click
-- [ ] On blur or Enter, call `updateDraft(id, { title })`
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:**
-  - [ ] Click draft title — becomes an input field
-  - [ ] Type new name, press Enter — title updates
-  - [ ] Reopen sidebar — new name shown in list
-  - [ ] Click away without changing — no spurious API call
+- [x] Make draft title in editor editable inline on click
+- [x] On blur or Enter, call `updateDraft(id, { title })`
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:**
+  - [x] Click draft title — becomes an input field
+  - [x] Type new name, press Enter — title updates
+  - [x] Reopen sidebar — new name shown in list
+  - [x] Click away without changing — no spurious API call
 
 ---
 
 ### Step 5.7 — Delete draft with undo
 
-- [ ] Add trash icon button to each sidebar draft item
-- [ ] On click: remove from store immediately, show "Draft deleted. Undo" toast with 30s countdown
-- [ ] Undo within window: restore draft to store, skip API call
-- [ ] After 30s: call `DELETE /api/drafts/:id`
-- [ ] If active draft deleted: switch to next most-recent
-- [ ] If last draft permanently deleted (30s timer fires): auto-create a new blank draft in the store timer callback — **not** via a reactive effect in App.svelte, which would race against the initial `loadDrafts()` call and create a spurious blank draft on every page load
-- [ ] Write tests in `frontend/src/lib/__tests__/deleteUndo.test.js`:
-  - [ ] Undo within window restores draft, no DELETE call made
-  - [ ] DELETE called exactly once after window expires
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:**
-  - [ ] Delete a draft — disappears from list, toast appears
-  - [ ] Click Undo — draft reappears, no network call made
-  - [ ] Delete again, wait 30s — draft is gone, DELETE was called
-  - [ ] Delete the active draft — editor switches to another draft
+- [x] Add trash icon button to each sidebar draft item
+- [x] On click: remove from store immediately, show "Draft deleted. Undo" toast with 30s countdown
+- [x] Undo within window: restore draft to store, skip API call
+- [x] After 30s: call `DELETE /api/drafts/:id`
+- [x] If active draft deleted: switch to next most-recent
+- [x] If last draft permanently deleted (30s timer fires): auto-create a new blank draft in the store timer callback — **not** via a reactive effect in App.svelte, which would race against the initial `loadDrafts()` call and create a spurious blank draft on every page load
+- [x] Write tests in `frontend/src/lib/__tests__/deleteUndo.test.js`:
+  - [x] Undo within window restores draft, no DELETE call made
+  - [x] DELETE called exactly once after window expires
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:**
+  - [x] Delete a draft — disappears from list, toast appears
+  - [x] Click Undo — draft reappears, no network call made
+  - [x] Delete again, wait 30s — draft is gone, DELETE was called
+  - [x] Delete the active draft — editor switches to another draft
 
 ---
 
 ### ✓ Phase 5 Checkpoint
 
-- [ ] All draft store tests pass
-- [ ] All search tests pass
-- [ ] All delete/undo tests pass
+- [x] All draft store tests pass
+- [x] All search tests pass
+- [x] All delete/undo tests pass
 - [ ] `npx playwright test` passes
-- [ ] **Full manual walkthrough:**
-  - [ ] Create 3 drafts, verify they appear sorted by modified date
-  - [ ] Search across title, content, and notes
-  - [ ] Rename a draft, confirm it persists after reload
-  - [ ] Delete with undo, delete without undo
-  - [ ] Switch between drafts — editor loads correct content each time
-- [ ] **Update the Progress Tracker**
+- [x] **Full manual walkthrough:**
+  - [x] Create 3 drafts, verify they appear sorted by modified date
+  - [x] Search across title, content, and notes
+  - [x] Rename a draft, confirm it persists after reload
+  - [x] Delete with undo, delete without undo
+  - [x] Switch between drafts — editor loads correct content each time
+- [x] **Update the Progress Tracker**
 
 ---
 
@@ -459,10 +459,10 @@ Before moving to Phase 2, confirm all of the following:
 
 ### Step 6.1 — Add notes panel to editor layout
 
-- [ ] Update `Editor.svelte` layout to include a collapsible notes panel
-- [ ] Notes panel contains a plain-text `<textarea>` labelled "Notes"
-- [ ] Collapse/expand toggle button; when collapsed only toggle is visible
-- [ ] **Verify:** `npm test` passes
+- [x] Update `Editor.svelte` layout to include a collapsible notes panel
+- [x] Notes panel contains a plain-text `<textarea>` labelled "Notes"
+- [x] Collapse/expand toggle button; when collapsed only toggle is visible
+- [x] **Verify:** `npm test` passes
 - [ ] **Manual validation:**
   - [ ] Notes panel visible alongside editor
   - [ ] Click toggle — panel collapses
@@ -473,9 +473,9 @@ Before moving to Phase 2, confirm all of the following:
 
 ### Step 6.2 — Wire notes to draft store
 
-- [ ] When active draft changes, populate notes textarea from `draft.notes`
-- [ ] On keystroke in notes textarea, debounce 500ms and call `updateDraft(id, { notes })`
-- [ ] **Verify:** `npm test` passes
+- [x] When active draft changes, populate notes textarea from `draft.notes`
+- [x] On keystroke in notes textarea, debounce 500ms and call `updateDraft(id, { notes })`
+- [x] **Verify:** `npm test` passes
 - [ ] **Manual validation:**
   - [ ] Type in notes — wait 500ms — no visible error
   - [ ] Reload page — notes are still there
@@ -486,7 +486,7 @@ Before moving to Phase 2, confirm all of the following:
 
 ### ✓ Phase 6 Checkpoint
 
-- [ ] All tests pass
+- [x] All tests pass
 - [ ] Notes persist across reloads
 - [ ] Notes are per-draft (switching drafts swaps notes correctly)
 - [ ] Collapse/expand works cleanly
