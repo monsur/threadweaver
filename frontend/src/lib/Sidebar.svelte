@@ -58,8 +58,8 @@
   aria-label="Drafts sidebar"
   style="position:fixed;top:0;right:0;z-index:45;height:100vh;width:22rem;background:#0f172a;border-left:1px solid #1e293b;display:flex;flex-direction:column;transform:{open ? 'translateX(0)' : 'translateX(100%)'};transition:transform 0.2s ease;overflow:hidden;"
 >
-  <!-- Header -->
-  <div style="padding:1rem;border-bottom:1px solid #1e293b;flex-shrink:0;">
+  <!-- Header — padding-top clears the fixed hamburger button (~3.25rem tall at top:1rem) -->
+  <div style="padding:3.5rem 1rem 1rem;border-bottom:1px solid #1e293b;flex-shrink:0;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
       <span style="color:#f1f5f9;font-weight:600;font-size:1rem;">Drafts</span>
       <button
