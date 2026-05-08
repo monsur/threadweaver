@@ -364,11 +364,13 @@ Before moving to Phase 2, confirm all of the following:
 - [ ] Render draft list inside sidebar, sorted by `updated_at` most recent first
 - [ ] Each item shows title and last-modified date
 - [ ] Clicking an item loads that draft into the editor and closes sidebar
+- [ ] **On page load:** load existing drafts and open the most-recently-modified one; only create a new blank draft if none exist — do NOT create a new draft on every page load
 - [ ] **Verify:** `npm test` passes
 - [ ] **Manual validation:**
   - [ ] Create two drafts via `curl`, open sidebar — both appear in correct order
   - [ ] Click a draft — editor loads its content, sidebar closes
   - [ ] Edit draft, reopen sidebar — `updated_at` order updates correctly
+  - [ ] Reload the page — the previously active draft re-opens (no new blank draft created)
 
 ---
 
@@ -423,7 +425,8 @@ Before moving to Phase 2, confirm all of the following:
 - [ ] On click: remove from store immediately, show "Draft deleted. Undo" toast with 30s countdown
 - [ ] Undo within window: restore draft to store, skip API call
 - [ ] After 30s: call `DELETE /api/drafts/:id`
-- [ ] If active draft deleted: switch to next most-recent or create blank
+- [ ] If active draft deleted: switch to next most-recent
+- [ ] If last draft permanently deleted (30s timer fires): auto-create a new blank draft in the store timer callback — **not** via a reactive effect in App.svelte, which would race against the initial `loadDrafts()` call and create a spurious blank draft on every page load
 - [ ] Write tests in `frontend/src/lib/__tests__/deleteUndo.test.js`:
   - [ ] Undo within window restores draft, no DELETE call made
   - [ ] DELETE called exactly once after window expires

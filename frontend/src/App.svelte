@@ -35,13 +35,6 @@
   init();
 
   let activeDraft = $derived(store.drafts.find(d => d.id === store.activeDraftId) ?? null);
-
-  // Auto-create a blank draft if the last one was permanently deleted.
-  $effect(() => {
-    if (authed && store.drafts.length === 0 && !store.pendingDelete) {
-      createDraft();
-    }
-  });
 </script>
 
 {#if authed === null}

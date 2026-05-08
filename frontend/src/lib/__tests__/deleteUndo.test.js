@@ -56,17 +56,22 @@ describe('deleteDraftWithUndo', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  test('after 30s DELETE is called exactly once', async () => {
-    deleteDraftWithUndo('1');
+  test('after 30s DELETE is called, then a blank draft is auto-created', async () => {
+    const newDraft = { id: 'auto', title: 'Untitled', content: '', notes: '', created_at: 2000, updated_at: 2000 };
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({ ok: true })                             // DELETE
+      .mockResolvedValueOnce({ ok: true, json: async () => newDraft }) // POST auto-create
+    );
 
+    deleteDraftWithUndo('1');
     await vi.runAllTimersAsync();
 
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-    expect(global.fetch).toHaveBeenCalledWith(
-      '/api/drafts/1',
-      expect.objectContaining({ method: 'DELETE' })
-    );
+    const calls = global.fetch.mock.calls;
+    expect(calls[0][0]).toBe('/api/drafts/1');
+    expect(calls[0][1]).toMatchObject({ method: 'DELETE' });
+    expect(calls[1][1]).toMatchObject({ method: 'POST' });
     expect(store.pendingDelete).toBeNull();
+    expect(store.drafts[0].id).toBe('auto');
   });
 
   test('no-op for unknown id', () => {

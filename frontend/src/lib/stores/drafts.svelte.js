@@ -52,6 +52,7 @@ export function deleteDraftWithUndo(id) {
   const timer = setTimeout(async () => {
     await fetch(`/api/drafts/${id}`, { method: 'DELETE', credentials: 'include' });
     store.pendingDelete = null;
+    if (store.drafts.length === 0) await createDraft();
   }, 30_000);
 
   store.pendingDelete = {
