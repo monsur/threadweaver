@@ -259,72 +259,72 @@ Before moving to Phase 2, confirm all of the following:
 
 ### Step 4.1 — `GET /api/drafts`
 
-- [ ] Implement route returning all drafts sorted by `updated_at` descending
-- [ ] Write tests:
-  - [ ] Returns 200 with empty array when no drafts exist
-  - [ ] Returns drafts sorted by `updated_at` descending
-  - [ ] Returns 401 without a valid session cookie
-- [ ] **Verify:** `npm test` in `backend/` passes
-- [ ] **Manual validation:** `curl localhost:8787/api/drafts -H "Cookie: session=<valid-cookie>"` returns `[]`
+- [x] Implement route returning all drafts sorted by `updated_at` descending
+- [x] Write tests:
+  - [x] Returns 200 with empty array when no drafts exist
+  - [x] Returns drafts sorted by `updated_at` descending
+  - [x] Returns 401 without a valid session cookie
+- [x] **Verify:** `npm test` in `backend/` passes
+- [x] **Manual validation:** `curl localhost:8787/api/drafts -H "Cookie: session=<valid-cookie>"` returns `[]`
 
 ---
 
 ### Step 4.2 — `POST /api/drafts`
 
-- [ ] Implement route creating a draft with UUID, defaulting `title`/`content`/`notes`, setting timestamps
-- [ ] Write tests:
-  - [ ] Creates draft with provided fields, returns 201 with full object
-  - [ ] Creates draft with no body, returns 201 with defaults
-  - [ ] Returns 401 without a valid session cookie
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:** `curl -X POST localhost:8787/api/drafts -H "Cookie: session=<valid-cookie>" -H "Content-Type: application/json" -d '{"title":"Test"}'` returns 201 with a draft object including an `id`
+- [x] Implement route creating a draft with UUID, defaulting `title`/`content`/`notes`, setting timestamps
+- [x] Write tests:
+  - [x] Creates draft with provided fields, returns 201 with full object
+  - [x] Creates draft with no body, returns 201 with defaults
+  - [x] Returns 401 without a valid session cookie
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:** `curl -X POST localhost:8787/api/drafts -H "Cookie: session=<valid-cookie>" -H "Content-Type: application/json" -d '{"title":"Test"}'` returns 201 with a draft object including an `id`
 
 ---
 
 ### Step 4.3 — `GET /api/drafts/:id`
 
-- [ ] Implement route returning a single draft by ID
-- [ ] Write tests:
-  - [ ] Returns 200 with the correct draft
-  - [ ] Returns 404 for an unknown ID
-  - [ ] Returns 401 without a valid session cookie
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:** Use the ID from Step 4.2 — `curl localhost:8787/api/drafts/<id> -H "Cookie: session=<valid-cookie>"` returns the draft
+- [x] Implement route returning a single draft by ID
+- [x] Write tests:
+  - [x] Returns 200 with the correct draft
+  - [x] Returns 404 for an unknown ID
+  - [x] Returns 401 without a valid session cookie
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:** Use the ID from Step 4.2 — `curl localhost:8787/api/drafts/<id> -H "Cookie: session=<valid-cookie>"` returns the draft
 
 ---
 
 ### Step 4.4 — `PUT /api/drafts/:id`
 
-- [ ] Implement route updating a draft, bumping `updated_at`
-- [ ] Write tests:
-  - [ ] Updates `content` only, other fields unchanged, `updated_at` bumped
-  - [ ] Updates all fields at once
-  - [ ] Returns 404 for unknown ID
-  - [ ] Returns 401 without a valid session cookie
-- [ ] **Verify:** `npm test` passes
-- [ ] **Manual validation:** `curl -X PUT localhost:8787/api/drafts/<id> -H "Cookie: session=<valid-cookie>" -H "Content-Type: application/json" -d '{"title":"Updated"}'` returns updated draft with new `updated_at`
+- [x] Implement route updating a draft, bumping `updated_at`
+- [x] Write tests:
+  - [x] Updates `content` only, other fields unchanged, `updated_at` bumped
+  - [x] Updates all fields at once
+  - [x] Returns 404 for unknown ID
+  - [x] Returns 401 without a valid session cookie
+- [x] **Verify:** `npm test` passes
+- [x] **Manual validation:** `curl -X PUT localhost:8787/api/drafts/<id> -H "Cookie: session=<valid-cookie>" -H "Content-Type: application/json" -d '{"title":"Updated"}'` returns updated draft with new `updated_at`
 
 ---
 
 ### Step 4.5 — `DELETE /api/drafts/:id`
 
-- [ ] Implement route deleting a draft, returning 204
-- [ ] Write tests:
-  - [ ] Deletes the draft, subsequent GET returns 404
-  - [ ] Returns 404 for unknown ID
-  - [ ] Returns 401 without a valid session cookie
-- [ ] **Verify:** `npm test` in `backend/` passes all tests across all endpoints
-- [ ] **Manual validation:** `curl -X DELETE localhost:8787/api/drafts/<id> -H "Cookie: session=<valid-cookie>"` returns 204, subsequent GET returns 404
+- [x] Implement route deleting a draft, returning 204
+- [x] Write tests:
+  - [x] Deletes the draft, subsequent GET returns 404
+  - [x] Returns 404 for unknown ID
+  - [x] Returns 401 without a valid session cookie
+- [x] **Verify:** `npm test` in `backend/` passes all tests across all endpoints
+- [x] **Manual validation:** `curl -X DELETE localhost:8787/api/drafts/<id> -H "Cookie: session=<valid-cookie>"` returns 204, subsequent GET returns 404
 
 ---
 
 ### ✓ Phase 4 Checkpoint
 
-- [ ] All 5 endpoints implemented and tested
-- [ ] `npm test` in `backend/` passes everything
-- [ ] Manually exercised all endpoints with `curl`
-- [ ] Auth middleware blocks all endpoints without a valid cookie
-- [ ] **Update the Progress Tracker**
+- [x] All 5 endpoints implemented and tested
+- [x] `npm test` in `backend/` passes everything
+- [x] Manually exercised all endpoints with `curl`
+- [x] Auth middleware blocks all endpoints without a valid cookie
+- [x] **Update the Progress Tracker**
 
 ---
 
