@@ -65,7 +65,7 @@
 
   $effect(() => {
     if (!textarea) return;
-    void content;
+    textarea.value = content; // sync DOM before measuring so scrollHeight is accurate
     textarea.style.height = 'auto';
     const h = textarea.scrollHeight + 'px';
     textarea.style.height = h;
