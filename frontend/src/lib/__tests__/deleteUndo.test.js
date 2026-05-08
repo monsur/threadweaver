@@ -1,31 +1,32 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
+import { IDBFactory } from 'fake-indexeddb';
 import { store, deleteDraftWithUndo, _reset } from '../stores/drafts.svelte.js';
+import { put as dbPut, _resetDb } from '../db.js';
 
 const sampleDraft = {
-  id: '1',
-  title: 'Test Draft',
-  content: 'hello',
-  notes: '',
-  created_at: 1000,
-  updated_at: 1000,
+  id: '1', title: 'Test Draft', content: 'hello',
+  notes: '', created_at: 1000, updated_at: 1000,
 };
 
-beforeEach(() => {
-  vi.useFakeTimers();
+beforeEach(async () => {
+  global.indexedDB = new IDBFactory();
+  _resetDb();
   _reset();
   store.drafts = [{ ...sampleDraft }];
   store.activeDraftId = '1';
+  await dbPut({ ...sampleDraft }); // IDB setup must finish before fake timers start
+  vi.useFakeTimers();
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }));
 });
 
 afterEach(() => {
-  _reset(); // clears any pending timer
+  _reset();
   vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
 describe('deleteDraftWithUndo', () => {
-  test('optimistically removes draft and sets pendingDelete', () => {
+  test('optimistically removes from store and sets pendingDelete', () => {
     deleteDraftWithUndo('1');
 
     expect(store.drafts).toHaveLength(0);
@@ -34,7 +35,7 @@ describe('deleteDraftWithUndo', () => {
     expect(store.pendingDelete.draft.id).toBe('1');
   });
 
-  test('switches active to next draft when deleting active', () => {
+  test('switches active to next draft when deleting the active one', () => {
     const other = { ...sampleDraft, id: '2', updated_at: 500 };
     store.drafts = [{ ...sampleDraft }, other];
 
@@ -43,7 +44,7 @@ describe('deleteDraftWithUndo', () => {
     expect(store.activeDraftId).toBe('2');
   });
 
-  test('undo within window restores draft and skips DELETE', () => {
+  test('undo restores draft to store, cancels DELETE', () => {
     deleteDraftWithUndo('1');
     store.pendingDelete.undo();
 
@@ -56,8 +57,10 @@ describe('deleteDraftWithUndo', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  test('after 30s DELETE is called, then a blank draft is auto-created', async () => {
-    const newDraft = { id: 'auto', title: 'Untitled', content: '', notes: '', created_at: 2000, updated_at: 2000 };
+  test('after 30s DELETE is called then a blank draft is auto-created', async () => {
+    const newDraft = {
+      id: 'auto', title: 'Untitled', content: '', notes: '', created_at: 2000, updated_at: 2000,
+    };
     vi.stubGlobal('fetch', vi.fn()
       .mockResolvedValueOnce({ ok: true })                             // DELETE
       .mockResolvedValueOnce({ ok: true, json: async () => newDraft }) // POST auto-create

@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [svelte()],
   test: {
     environment: 'jsdom',
+    setupFiles: ['./src/test-setup.js'],
   },
   server: {
     proxy: {

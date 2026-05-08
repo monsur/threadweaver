@@ -87,6 +87,15 @@ describe('POST /api/drafts', () => {
     expect(draft.notes).toBe('');
   });
 
+  test('uses client-provided id when supplied', async () => {
+    const res = await worker.fetch(
+      await authedReq('/api/drafts', 'POST', { id: 'client-uuid-123', title: 'Offline draft' }),
+      env
+    );
+    expect(res.status).toBe(201);
+    expect((await res.json()).id).toBe('client-uuid-123');
+  });
+
   test('returns 401 without a valid session cookie', async () => {
     const res = await worker.fetch(req('/api/drafts', 'POST', { title: 'x' }), env);
     expect(res.status).toBe(401);

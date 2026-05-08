@@ -7,7 +7,7 @@ export async function listDrafts(db) {
 
 export async function createDraft(db, data = {}) {
   const draft = {
-    id: crypto.randomUUID(),
+    id: data.id ?? crypto.randomUUID(),
     title: data.title ?? 'Untitled',
     content: data.content ?? '',
     notes: data.notes ?? '',

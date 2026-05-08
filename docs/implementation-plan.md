@@ -5,8 +5,8 @@
 | Field | Value |
 |---|---|
 | **Last updated** | 2026-05-08 |
-| **Last completed step** | Phase 5 complete (Step 5.7) |
-| **Resume from** | Phase 6, Step 6.1 |
+| **Last completed step** | Phase 6 complete (Step 6.2) |
+| **Resume from** | Phase 7, Step 7.1 |
 | **Notes** | Playwright browser download unavailable in dev environment — run `npx playwright install chromium` on your local machine before running E2E tests |
 
 > Update this table at the end of each work session before stopping.
@@ -487,10 +487,10 @@ Before moving to Phase 2, confirm all of the following:
 ### ✓ Phase 6 Checkpoint
 
 - [x] All tests pass
-- [ ] Notes persist across reloads
-- [ ] Notes are per-draft (switching drafts swaps notes correctly)
-- [ ] Collapse/expand works cleanly
-- [ ] **Update the Progress Tracker**
+- [x] Notes persist across reloads
+- [x] Notes are per-draft (switching drafts swaps notes correctly)
+- [x] Collapse/expand works cleanly
+- [x] **Update the Progress Tracker**
 
 ---
 
