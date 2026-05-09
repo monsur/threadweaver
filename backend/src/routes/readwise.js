@@ -5,6 +5,20 @@ function json(data, status = 200) {
   });
 }
 
+async function readwiseFetch(url, apiKey, retries = 3) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const res = await fetch(url, { headers: { Authorization: `Token ${apiKey}` } });
+    if (res.status === 429) {
+      if (attempt === retries) throw new Error('Readwise API error: 429');
+      const retryAfter = parseInt(res.headers.get('Retry-After') ?? '5', 10);
+      await new Promise(r => setTimeout(r, retryAfter * 1000));
+      continue;
+    }
+    if (!res.ok) throw new Error(`Readwise API error: ${res.status}`);
+    return res;
+  }
+}
+
 async function fetchAllArticles(apiKey, tag) {
   const articles = [];
   let cursor = null;
@@ -16,11 +30,7 @@ async function fetchAllArticles(apiKey, tag) {
     url.searchParams.set('sort', '-created_at');
     if (cursor) url.searchParams.set('pageCursor', cursor);
 
-    const res = await fetch(url.toString(), {
-      headers: { Authorization: `Token ${apiKey}` },
-    });
-    if (!res.ok) throw new Error(`Readwise API error: ${res.status}`);
-
+    const res = await readwiseFetch(url.toString(), apiKey);
     const data = await res.json();
     for (const doc of (data.results ?? [])) {
       articles.push({ id: doc.id, title: doc.title, author: doc.author, url: doc.url });
@@ -53,11 +63,11 @@ export async function handleReadwise(request, env) {
     try {
       // ⚠️ v3 IDs are UUIDs; v2 book_id is numeric — verify this mapping during testing.
       // Fallback: filter by source_url if book_id doesn't match.
-      const res = await fetch(
+      const res = await readwiseFetch(
         `https://readwise.io/api/v2/highlights/?book_id=${encodeURIComponent(id)}&page_size=100`,
-        { headers: { Authorization: `Token ${env.READWISE_API_KEY}` } },
-      );
-      if (!res.ok) return json({ highlights: [] });
+        env.READWISE_API_KEY,
+      ).catch(() => null);
+      if (!res) return json({ highlights: [] });
       const data = await res.json();
       const highlights = (data.results ?? []).map(h => h.text);
       return json({ highlights });
