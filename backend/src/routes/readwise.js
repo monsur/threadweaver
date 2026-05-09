@@ -26,13 +26,13 @@ async function fetchAllArticles(apiKey, tag) {
   do {
     const url = new URL('https://readwise.io/api/v3/list');
     url.searchParams.set('category', 'article');
-    url.searchParams.set('tags', tag);
     url.searchParams.set('sort', '-created_at');
     if (cursor) url.searchParams.set('pageCursor', cursor);
 
     const res = await readwiseFetch(url.toString(), apiKey);
     const data = await res.json();
     for (const doc of (data.results ?? [])) {
+      if (tag && !doc.tags?.[tag]) continue;
       articles.push({ id: doc.id, title: doc.title, author: doc.author, url: doc.url });
     }
     cursor = data.nextPageCursor ?? null;

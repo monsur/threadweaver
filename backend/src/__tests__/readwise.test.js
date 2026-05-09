@@ -55,6 +55,7 @@ const articlePage = (results, nextPageCursor = null) => ({
 
 const makeDoc = (id, title = `Article ${id}`) => ({
   id, title, author: 'Author', url: `https://example.com/${id}`,
+  tags: { bluesky: { name: 'bluesky' } },
 });
 
 // ── GET /api/readwise/articles ────────────────────────────────────────────────
