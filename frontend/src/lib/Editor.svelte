@@ -72,7 +72,10 @@
 
   $effect(() => {
     if (!textarea) return;
-    textarea.value = content; // sync DOM before measuring so scrollHeight is accurate
+    // Only set value when content changed externally (draft switch, initial load).
+    // Skipping when already equal preserves cursor position during normal typing —
+    // setting element.value programmatically always resets the cursor to the end.
+    if (textarea.value !== content) textarea.value = content;
     textarea.style.height = 'auto';
     const h = textarea.scrollHeight + 'px';
     textarea.style.height = h;
