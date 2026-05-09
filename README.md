@@ -1,8 +1,24 @@
 # Threadweaver
 
-A Bluesky thread authoring tool. Write long-form content and Threadweaver splits it into numbered post chunks, highlights character overages in red, and lets you copy individual posts or the whole thread with one click. Drafts are saved to the cloud and work offline.
+I like to think of [my Bluesky](https://bsky.app/profile/monsur.hossa.in) as blog posts split into bite-sized chunks. Threadweaver helps compose these posts by giving visual feedback on chunk sizes.
+
+Threadweaver is a web app with a text editor. As you type, an indicator on the left numbers each Bluesky post. Clicking the indicator copies the post to the clipboard. The text turns red if it goes over the character limit. Use three blank lines to create a new post chunk.
+
+Drafts are saved to the cloud so you can access them from any device, and edits work offline and sync when you reconnect.
 
 **Live app:** https://threadweaver.pages.dev
+
+![Screenshot of Threadweaver](https://monsur.hossa.in/images/posts/threadweaver01.png "Screenshot of Threadweaver")
+
+---
+
+Threadweaver was vibecoded, of course. Gemini built the first version and it worked well out of the box.
+
+Things got complicated when adding new features. Claude didn't fare much better initially — while Claude had some neat ideas, complex features didn't always work end-to-end.
+
+So I tried a different approach: breaking the problem into pieces and building up to the solution. Claude fared much better on small iterative prompts in succession. This approach reduced the problem space to small simple chunks, each with clear scope. Better problem framing guided AI to a better solution.
+
+The current version was built with [Claude Code](https://claude.ai/code) following a structured implementation plan in `docs/implementation-plan.md`.
 
 ---
 
