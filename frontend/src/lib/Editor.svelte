@@ -17,16 +17,20 @@
   let copyAllActive = $state(false);
   let checkedPrefixIndex = $state(null);
   let saveTimer = null;
+  let prevDraftId = null;
 
   let textarea = $state(null);
   let titleInput = $state(null);
   let visualEditor = $state(null);
 
-  // Reset local state when switching to a different draft.
-  // Only track draft.id as a dependency so typing (which changes draft.content
-  // via debounced save) doesn't clobber what the user is currently typing.
+  // Reset local state only when switching to a different draft (id changes).
+  // Guarding on prevDraftId prevents store updates to the same draft (e.g. the
+  // server response coming back after an autosave) from re-running this effect
+  // and clobbering text the user typed while the API call was in flight.
   $effect(() => {
     const id = draft?.id;
+    if (id === prevDraftId) return;
+    prevDraftId = id;
     clearTimeout(saveTimer);
     saveTimer = null;
     untrack(() => {
