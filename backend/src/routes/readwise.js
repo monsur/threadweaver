@@ -40,7 +40,8 @@ export async function handleReadwise(request, env) {
     try {
       const articles = await fetchAllArticles(env.READWISE_API_KEY, env.READWISE_TAG);
       return json({ articles });
-    } catch {
+    } catch (err) {
+      console.error('[readwise] articles fetch failed:', err?.message ?? err);
       return json({ error: 'Failed to fetch articles from Readwise' }, 502);
     }
   }
