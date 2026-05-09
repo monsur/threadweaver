@@ -27,6 +27,9 @@ export default defineConfig({
       },
     }),
   ],
+  resolve: {
+    conditions: ['browser'],
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.js'],

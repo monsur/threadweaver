@@ -1,6 +1,7 @@
 <script>
   import Editor from './lib/Editor.svelte';
   import Login from './lib/Login.svelte';
+  import Nav from './lib/Nav.svelte';
   import Sidebar from './lib/Sidebar.svelte';
   import { store, loadDrafts, createDraft } from './lib/stores/drafts.svelte.js';
   import { network } from './lib/stores/network.svelte.js';
@@ -8,6 +9,7 @@
 
   // null = checking, false = not authenticated, true = authenticated
   let authed = $state(null);
+  let view = $state('editor');
 
   async function init() {
     try {
@@ -52,11 +54,16 @@
   <div class="p-6 md:p-10 flex flex-col items-center min-h-screen">
     <div class="w-full max-w-5xl">
       <h1 class="text-3xl font-bold mb-4 text-center text-slate-100">Threadweaver</h1>
-      <p class="text-sm text-gray-400 text-center mb-6">
-        Write your post below. Use three blank lines to create a new post chunk.
-        Characters over the limit will be highlighted in red.
-      </p>
-      <Editor draft={activeDraft} />
+      <Nav currentView={view} setView={(v) => view = v} />
+      {#if view === 'editor'}
+        <p class="text-sm text-gray-400 text-center mb-6">
+          Write your post below. Use three blank lines to create a new post chunk.
+          Characters over the limit will be highlighted in red.
+        </p>
+        <Editor draft={activeDraft} />
+      {:else if view === 'readwise'}
+        <p class="text-sm text-gray-400 text-center mb-6">Readwise coming soon.</p>
+      {/if}
     </div>
   </div>
   <Sidebar />
