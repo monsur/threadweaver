@@ -6,7 +6,7 @@ Threadweaver is a web app with a text editor. As you type, an indicator on the l
 
 Drafts are saved to the cloud so you can access them from any device, and edits work offline and sync when you reconnect.
 
-**Live app:** https://threadweaver.pages.dev
+**Live app:** https://threadweaver-bg1.pages.dev
 
 ![Screenshot of Threadweaver](https://monsur.hossa.in/images/posts/threadweaver01.png "Screenshot of Threadweaver")
 
