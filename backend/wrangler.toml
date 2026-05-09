@@ -1,0 +1,9 @@
+name = "threadweaver-backend"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "threadweaver-db"
+database_id = "1e2d48f8-5fb1-4d40-b4e2-2f23dd3f51de"
+migrations_dir = "migrations"
