@@ -9,24 +9,23 @@ A new page inside Threadweaver that lists Readwise-tagged articles, generates Bl
 
 ## Last Session
 
-- Finalized PRD and implementation plan (PLAN.md)
-- Designed Readwise page UI in detail
-- Resolved all open questions
+- Implemented Phase 1: navigation refactor
+  - Added `view` state to `App.svelte` (`'editor' | 'readwise'`, default: `'editor'`)
+  - Created `Nav.svelte` — breadcrumb-style dropdown nav (Threadweaver › Editor ▾)
+  - Removed instructions paragraph; tightened top padding
+  - Added `@testing-library/svelte`; configured browser resolve condition in vitest
+  - 5 Nav component tests, all passing
 
 ## Next
 
-- Begin Phase 1: navigation refactor in Threadweaver
-  - Add `view` state to `App.svelte` (`'editor' | 'readwise'`, default: `'editor'`)
-  - Create `Nav.svelte` — small persistent top nav with Editor and Readwise links
-  - Pass `setView` callback as prop to child components
-  - No home/landing page — editor remains the default
+- Phase 3: AI draft generation — `POST /api/readwise/generate`, `backend/src/lib/llm.js`
 
 ## Implementation Phases
 
-1. **Navigation refactor** — new Home.svelte, view state in App.svelte
-2. **Readwise article list** — `GET /api/readwise/articles`, new Readwise.svelte
+1. ✅ **Navigation refactor** — `Nav.svelte`, view state in `App.svelte`
+2. ✅ **Readwise article list** — `GET /api/readwise/articles`, `GET /api/readwise/articles/:id/highlights`, `Readwise.svelte`
 3. **AI draft generation** — `POST /api/readwise/generate`, llm.js abstraction
-4. **Archive + highlights** — `DELETE /api/readwise/articles/:id/tag`, `GET /api/readwise/articles/:id/highlights`
+4. **Archive** — `DELETE /api/readwise/articles/:id/tag`
 
 Full details in PLAN.md.
 
@@ -35,7 +34,7 @@ Full details in PLAN.md.
 **Architecture**
 - Built inside the Threadweaver repo (not standalone)
 - All new routes go in `backend/src/routes/readwise.js`, registered in `backend/src/index.js`
-- New frontend components: `Home.svelte`, `Readwise.svelte`
+- New frontend components: `Nav.svelte`, `Readwise.svelte`
 - Only existing file with significant changes: `App.svelte` (view state)
 - No changes to `Editor.svelte` or `Sidebar.svelte`
 - No database migrations needed
@@ -58,20 +57,21 @@ Full details in PLAN.md.
 **Readwise API**
 - Article list: Readwise Reader API v3 — `GET /api/v3/list?category=article&tags=<TAG>&sort=-created_at`
 - Highlights: Readwise API v2 — `GET /api/v2/highlights/?book_id=<id>`
-- ⚠️ v3 document IDs may not map directly to v2 `book_id` — verify this mapping early in implementation
+- ⚠️ v3 document IDs are UUIDs; v2 book_id is numeric — verify this mapping during manual testing; fallback may be filtering by `source_url`
 - Highlights are fetched on demand (on first expand), not on page load
 
 **LLM**
 - Default provider: Claude API (Anthropic)
-- Abstracted behind `backend/src/lib/llm.js` — exports `generateThread(article)`
+- Abstracted behind `backend/src/lib/llm.js` — exports `generateThread(article, env)`
 - `LLM_PROVIDER` env var selects provider; currently only `anthropic` implemented
-- Prompt lives in llm.js: variable-length thread, each post = one distinct idea, "quote + link" is valid
+- Prompt lives in `backend/src/prompts/generate-thread.txt`
 
-**Environment variables** (add to `wrangler.toml`):
+**Environment variables** (in `wrangler.toml` / `.dev.vars`):
 - `READWISE_API_KEY`
 - `READWISE_TAG`
 - `ANTHROPIC_API_KEY`
 - `LLM_PROVIDER` (default: `anthropic`)
+- `LLM_MODEL`, `LLM_MAX_TOKENS`, `LLM_TEMPERATURE`
 
 ## Readwise Page UI (Readwise.svelte)
 

@@ -2,6 +2,19 @@ name = "threadweaver-backend"
 main = "src/index.js"
 compatibility_date = "2024-11-01"
 
+[vars]
+READWISE_API_KEY = ""
+READWISE_TAG = ""
+ANTHROPIC_API_KEY = ""
+LLM_PROVIDER = "anthropic"
+LLM_MODEL = "claude-opus-4-7"
+LLM_MAX_TOKENS = "1024"
+LLM_TEMPERATURE = "0.7"
+
+[[rules]]
+type = "Text"
+globs = ["**/*.txt"]
+
 [[d1_databases]]
 binding = "DB"
 database_name = "threadweaver-db"

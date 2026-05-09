@@ -2,6 +2,7 @@
   import Editor from './lib/Editor.svelte';
   import Login from './lib/Login.svelte';
   import Nav from './lib/Nav.svelte';
+  import Readwise from './lib/Readwise.svelte';
   import Sidebar from './lib/Sidebar.svelte';
   import { store, loadDrafts, createDraft } from './lib/stores/drafts.svelte.js';
   import { network } from './lib/stores/network.svelte.js';
@@ -57,7 +58,7 @@
       {#if view === 'editor'}
         <Editor draft={activeDraft} />
       {:else if view === 'readwise'}
-        <p class="text-sm text-gray-400 mt-4">Readwise coming soon.</p>
+        <Readwise setView={(v) => view = v} />
       {/if}
     </div>
   </div>

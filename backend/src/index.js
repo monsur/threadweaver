@@ -1,5 +1,6 @@
 import { signCookie, verifyPassword, getSession } from './lib/auth.js';
 import { listDrafts, createDraft, getDraft, updateDraft, deleteDraft } from './routes/drafts.js';
+import { handleReadwise } from './routes/readwise.js';
 
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
@@ -66,6 +67,9 @@ async function handle(request, env) {
       const draft = await createDraft(env.DB, body);
       return json(draft, 201);
     }
+
+    // /api/readwise/* routes
+    if (pathname.startsWith('/api/readwise')) return handleReadwise(request, env);
 
     // /api/drafts/:id routes
     const draftId = pathname.match(/^\/api\/drafts\/([^/]+)$/)?.[1];
