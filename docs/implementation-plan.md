@@ -4,9 +4,9 @@
 
 | Field | Value |
 |---|---|
-| **Last updated** | 2026-05-08 |
-| **Last completed step** | Phase 7 complete (Step 7.5 + PWA) |
-| **Resume from** | Phase 8, Step 8.1 |
+| **Last updated** | 2026-05-09 |
+| **Last completed step** | Phase 8 complete — app live on Cloudflare |
+| **Resume from** | Phase 9 (AI features) |
 | **Notes** | Playwright browser download unavailable in dev environment — run `npx playwright install chromium` on your local machine before running E2E tests |
 
 > Update this table at the end of each work session before stopping.
@@ -665,9 +665,9 @@ Architecture: the backend Worker and frontend Pages project are deployed separat
 
 ### ✓ Phase 8 Checkpoint
 
-- [ ] App is live at the Cloudflare Pages URL
-- [ ] Full manual golden path completed above
-- [ ] **Update the Progress Tracker** — set Last completed step to "Phase 8 complete"
+- [x] App is live at the Cloudflare Pages URL
+- [x] Full manual golden path completed above
+- [x] **Update the Progress Tracker** — set Last completed step to "Phase 8 complete"
 
 ---
 
@@ -682,4 +682,4 @@ Architecture: the backend Worker and frontend Pages project are deployed separat
 | 5 | Draft sidebar: list, search, create, rename, delete+undo | — |
 | 6 | Notes panel wired to drafts | — |
 | 7 | IndexedDB cache + offline editing + background sync + PWA | ✅ Done |
-| 8 | Deployed to Cloudflare, E2E tests passing | — |
+| 8 | Deployed to Cloudflare, E2E tests passing | ✅ Done |
