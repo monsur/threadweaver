@@ -15,7 +15,7 @@ if (!API_KEY) {
 }
 
 const url = new URL('https://readwise.io/api/v3/list');
-url.searchParams.set('category', 'article');
+// url.searchParams.set('category', 'article');  // remove to see all types
 // url.searchParams.set('tag', TAG);   // server-side filter — unreliable
 
 const res = await fetch(url.toString(), {
