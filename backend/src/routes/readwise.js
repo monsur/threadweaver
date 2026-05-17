@@ -21,6 +21,16 @@ async function readwiseFetch(url, apiKey, retries = 3) {
   }
 }
 
+async function fetchHighlightsBySourceUrl(sourceUrl, apiKey) {
+  const res = await readwiseFetch(
+    `https://readwise.io/api/v2/highlights/?source_url=${encodeURIComponent(sourceUrl)}&page_size=100`,
+    apiKey,
+  ).catch(() => null);
+  if (!res) return [];
+  const data = await res.json();
+  return (data.results ?? []).map(h => h.text);
+}
+
 async function fetchAllArticles(apiKey, tag) {
   const articles = [];
   let cursor = null;
@@ -62,15 +72,15 @@ export async function handleReadwise(request, env) {
   if (highlightsMatch && method === 'GET') {
     const id = highlightsMatch[1];
     try {
-      // ⚠️ v3 IDs are UUIDs; v2 book_id is numeric — verify this mapping during testing.
-      // Fallback: filter by source_url if book_id doesn't match.
-      const res = await readwiseFetch(
-        `https://readwise.io/api/v2/highlights/?book_id=${encodeURIComponent(id)}&page_size=100`,
+      const docRes = await readwiseFetch(
+        `https://readwise.io/api/v3/list?id=${encodeURIComponent(id)}`,
         env.READWISE_API_KEY,
       ).catch(() => null);
-      if (!res) return json({ highlights: [] });
-      const data = await res.json();
-      const highlights = (data.results ?? []).map(h => h.text);
+      if (!docRes) return json({ highlights: [] });
+      const docData = await docRes.json();
+      const sourceUrl = docData.results?.[0]?.source_url;
+      if (!sourceUrl) return json({ highlights: [] });
+      const highlights = await fetchHighlightsBySourceUrl(sourceUrl, env.READWISE_API_KEY);
       return json({ highlights });
     } catch {
       return json({ highlights: [] });
@@ -94,13 +104,10 @@ export async function handleReadwise(request, env) {
     const doc = articleData.results?.[0];
     if (!doc) return json({ error: 'Article not found' }, 404);
 
-    // Fetch highlights (best-effort)
-    const hlRes = await readwiseFetch(
-      `https://readwise.io/api/v2/highlights/?book_id=${encodeURIComponent(article_id)}&page_size=100`,
-      env.READWISE_API_KEY,
-    ).catch(() => null);
-    const hlData = hlRes ? await hlRes.json() : { results: [] };
-    const highlights = (hlData.results ?? []).map(h => h.text);
+    // Fetch highlights (best-effort) via source_url — v3 IDs are UUIDs, not v2 numeric book_ids
+    const highlights = doc.source_url
+      ? await fetchHighlightsBySourceUrl(doc.source_url, env.READWISE_API_KEY)
+      : [];
 
     // Generate thread — if this fails, abort without touching the tag
     let content;
