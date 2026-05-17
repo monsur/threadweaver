@@ -2,6 +2,13 @@ import { describe, test, expect, vi, afterEach } from 'vitest';
 import { render, fireEvent, cleanup, waitFor, screen } from '@testing-library/svelte';
 import Readwise from '../Readwise.svelte';
 
+vi.mock('../stores/drafts.svelte.js', () => ({
+  store: { drafts: [], activeDraftId: null },
+  createDraft: vi.fn().mockResolvedValue({ id: 'new-draft-id' }),
+  setActive: vi.fn(),
+  loadDrafts: vi.fn(),
+}));
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -138,5 +145,65 @@ describe('Readwise expand and highlights', () => {
     await waitFor(() => screen.getByText('Article A'));
     await fireEvent.click(screen.getByLabelText('Expand'));
     await waitFor(() => expect(screen.getByText('No highlights')).toBeInTheDocument());
+  });
+});
+
+// ── Post button ───────────────────────────────────────────────────────────────
+
+describe('Readwise Post button', () => {
+  test('clicking Post shows loading overlay and disables buttons', async () => {
+    let resolveGenerate;
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url) => {
+      if (String(url).includes('/api/readwise/articles')) {
+        return { ok: true, json: async () => ({ articles: makeArticles('Article A') }) };
+      }
+      // generate call — hang until we resolve
+      return new Promise(r => { resolveGenerate = r; });
+    }));
+
+    render(Readwise, { setView: vi.fn() });
+    await waitFor(() => screen.getByText('Article A'));
+    await fireEvent.click(screen.getByText('Post'));
+
+    expect(screen.getByText('Generating…')).toBeInTheDocument();
+    expect(screen.getByText('Post')).toBeDisabled();
+    expect(screen.getByText('Archive')).toBeDisabled();
+
+    resolveGenerate({ ok: false, json: async () => ({}) });
+  });
+
+  test('on success: calls createDraft, setActive, setView, and removes article', async () => {
+    const { createDraft, setActive } = await import('../stores/drafts.svelte.js');
+    const setView = vi.fn();
+
+    mockFetch([
+      { json: { articles: makeArticles('Article A') } },
+      { json: { title: 'Article A', content: 'thread', notes: 'notes' } },
+    ]);
+
+    render(Readwise, { setView });
+    await waitFor(() => screen.getByText('Article A'));
+    await fireEvent.click(screen.getByText('Post'));
+    await waitFor(() => expect(setView).toHaveBeenCalledWith('editor'));
+
+    expect(createDraft).toHaveBeenCalledWith({ title: 'Article A', content: 'thread', notes: 'notes' });
+    expect(setActive).toHaveBeenCalledWith('new-draft-id');
+    expect(screen.queryByText('Article A')).not.toBeInTheDocument();
+  });
+
+  test('on error: hides overlay, re-enables buttons, shows error message', async () => {
+    mockFetch([
+      { json: { articles: makeArticles('Article A') } },
+      { ok: false, status: 500, json: {} },
+    ]);
+
+    render(Readwise, { setView: vi.fn() });
+    await waitFor(() => screen.getByText('Article A'));
+    await fireEvent.click(screen.getByText('Post'));
+    await waitFor(() => expect(screen.getByText(/failed to generate/i)).toBeInTheDocument());
+
+    expect(screen.queryByText('Generating…')).not.toBeInTheDocument();
+    expect(screen.getByText('Post')).not.toBeDisabled();
+    expect(screen.getByText('Archive')).not.toBeDisabled();
   });
 });

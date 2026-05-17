@@ -10,6 +10,10 @@ beforeEach(() => {
     DB: createD1Mock(),
     READWISE_API_KEY: 'rw-test-key',
     READWISE_TAG: 'bluesky',
+    ANTHROPIC_API_KEY: 'anthropic-test-key',
+    LLM_MODEL: 'claude-opus-4-7',
+    LLM_MAX_TOKENS: '1024',
+    LLM_TEMPERATURE: '0.7',
   };
   vi.restoreAllMocks();
 });
@@ -37,15 +41,33 @@ async function authedReq(path, method = 'GET', body = null) {
 }
 
 function mockReadwiseFetch(responses) {
-  // responses is an array of { ok, json } objects returned in order
   let i = 0;
   vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url) => {
-    // Pass-through internal worker requests (login etc.) that don't hit readwise.io
     if (!String(url).includes('readwise.io')) {
       return { ok: false, status: 500, json: async () => ({}) };
     }
     const r = responses[i++] ?? responses[responses.length - 1];
     return { ok: r.ok ?? true, status: r.status ?? 200, json: async () => r.json };
+  }));
+}
+
+// Dispatches fetch mocks by URL pattern for multi-call routes (generate)
+function mockGenerateFetch({ doc, highlights = [], llmText = 'post one\n\n\npost two', patchOk = true } = {}) {
+  vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url, opts) => {
+    const u = String(url);
+    if (u.includes('api.anthropic.com')) {
+      return { ok: true, json: async () => ({ content: [{ type: 'text', text: llmText }] }) };
+    }
+    if (u.includes('/api/v3/update')) {
+      return { ok: patchOk, json: async () => ({}) };
+    }
+    if (u.includes('/api/v3/list')) {
+      return { ok: true, json: async () => ({ results: doc ? [doc] : [] }) };
+    }
+    if (u.includes('/api/v2/highlights')) {
+      return { ok: true, json: async () => ({ results: highlights.map((text, i) => ({ id: i, text })) }) };
+    }
+    return { ok: false, status: 404, json: async () => ({}) };
   }));
 }
 
@@ -133,5 +155,59 @@ describe('GET /api/readwise/articles/:id/highlights', () => {
     expect(res.status).toBe(200);
     const { highlights } = await res.json();
     expect(highlights).toEqual([]);
+  });
+});
+
+// ── POST /api/readwise/generate ───────────────────────────────────────────────
+
+describe('POST /api/readwise/generate', () => {
+  const doc = { id: 'doc-1', title: 'Great Article', author: 'Jane', url: 'https://example.com/1' };
+
+  test('returns 401 with no session cookie', async () => {
+    const res = await worker.fetch(req('/api/readwise/generate', 'POST', { article_id: 'doc-1' }), env);
+    expect(res.status).toBe(401);
+  });
+
+  test('returns { title, content, notes } and calls PATCH to remove tag on success', async () => {
+    const fetchMock = mockGenerateFetch({ doc, highlights: ['Highlight one', 'Highlight two'] });
+    const res = await worker.fetch(await authedReq('/api/readwise/generate', 'POST', { article_id: 'doc-1' }), env);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.title).toBe('Great Article');
+    expect(body.content).toBe('post one\n\n\npost two');
+    expect(body.notes).toContain('https://example.com/1');
+
+    const calls = vi.mocked(global.fetch).mock.calls.map(c => String(c[0]));
+    expect(calls.some(u => u.includes('/api/v3/update'))).toBe(true);
+  });
+
+  test('notes contains source URL and formatted highlight list', async () => {
+    mockGenerateFetch({ doc, highlights: ['Point A', 'Point B'] });
+    const res = await worker.fetch(await authedReq('/api/readwise/generate', 'POST', { article_id: 'doc-1' }), env);
+    const { notes } = await res.json();
+    expect(notes).toBe('Source: https://example.com/1\n\nHighlights:\n- Point A\n- Point B');
+  });
+
+  test('returns 500 and does NOT call PATCH when LLM fails', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url) => {
+      const u = String(url);
+      if (u.includes('api.anthropic.com')) return { ok: false, status: 500, json: async () => ({}) };
+      if (u.includes('/api/v3/list'))      return { ok: true, json: async () => ({ results: [doc] }) };
+      if (u.includes('/api/v2/highlights')) return { ok: true, json: async () => ({ results: [] }) };
+      return { ok: false, json: async () => ({}) };
+    }));
+    const res = await worker.fetch(await authedReq('/api/readwise/generate', 'POST', { article_id: 'doc-1' }), env);
+    expect(res.status).toBe(500);
+    const calls = vi.mocked(global.fetch).mock.calls.map(c => String(c[0]));
+    expect(calls.some(u => u.includes('/api/v3/update'))).toBe(false);
+  });
+
+  test('still returns generated content when tag removal fails', async () => {
+    mockGenerateFetch({ doc, patchOk: false });
+    const res = await worker.fetch(await authedReq('/api/readwise/generate', 'POST', { article_id: 'doc-1' }), env);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.content).toBe('post one\n\n\npost two');
+    expect(body.warning).toBeDefined();
   });
 });

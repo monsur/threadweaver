@@ -1,3 +1,5 @@
+import { generateThread } from '../lib/llm.js';
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -74,6 +76,68 @@ export async function handleReadwise(request, env) {
     } catch {
       return json({ highlights: [] });
     }
+  }
+
+  // POST /api/readwise/generate
+  if (pathname === '/api/readwise/generate' && method === 'POST') {
+    let body;
+    try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
+    const { article_id } = body ?? {};
+    if (!article_id) return json({ error: 'Missing article_id' }, 400);
+
+    // Fetch article details
+    const articleRes = await readwiseFetch(
+      `https://readwise.io/api/v3/list?id=${encodeURIComponent(article_id)}`,
+      env.READWISE_API_KEY,
+    ).catch(() => null);
+    if (!articleRes) return json({ error: 'Failed to fetch article' }, 502);
+    const articleData = await articleRes.json();
+    const doc = articleData.results?.[0];
+    if (!doc) return json({ error: 'Article not found' }, 404);
+
+    // Fetch highlights (best-effort)
+    const hlRes = await readwiseFetch(
+      `https://readwise.io/api/v2/highlights/?book_id=${encodeURIComponent(article_id)}&page_size=100`,
+      env.READWISE_API_KEY,
+    ).catch(() => null);
+    const hlData = hlRes ? await hlRes.json() : { results: [] };
+    const highlights = (hlData.results ?? []).map(h => h.text);
+
+    // Generate thread — if this fails, abort without touching the tag
+    let content;
+    try {
+      content = await generateThread({ title: doc.title, url: doc.url, author: doc.author, highlights }, env);
+    } catch (err) {
+      console.error('[readwise] LLM generation failed:', err?.message ?? err);
+      return json({ error: 'Failed to generate thread' }, 500);
+    }
+
+    // Remove tag (best-effort — content is not lost if this fails)
+    let tagRemoved = true;
+    try {
+      const patchRes = await fetch(`https://readwise.io/api/v3/update/${article_id}/`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Token ${env.READWISE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tags: { [env.READWISE_TAG]: null } }),
+      });
+      if (!patchRes.ok) tagRemoved = false;
+    } catch {
+      tagRemoved = false;
+    }
+
+    const notes = highlights.length > 0
+      ? `Source: ${doc.url}\n\nHighlights:\n${highlights.map(h => `- ${h}`).join('\n')}`
+      : `Source: ${doc.url}`;
+
+    return json({
+      title: doc.title,
+      content,
+      notes,
+      ...(tagRemoved ? {} : { warning: 'Tag could not be removed from Readwise' }),
+    });
   }
 
   return json({ error: 'Not found' }, 404);

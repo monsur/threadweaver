@@ -9,22 +9,22 @@ A new page inside Threadweaver that lists Readwise-tagged articles, generates Bl
 
 ## Last Session
 
-- Implemented Phase 1: navigation refactor
-  - Added `view` state to `App.svelte` (`'editor' | 'readwise'`, default: `'editor'`)
-  - Created `Nav.svelte` — breadcrumb-style dropdown nav (Threadweaver › Editor ▾)
-  - Removed instructions paragraph; tightened top padding
-  - Added `@testing-library/svelte`; configured browser resolve condition in vitest
-  - 5 Nav component tests, all passing
+- Implemented Phase 3: AI draft generation
+  - `backend/src/prompts/generate-thread.txt` — editable system prompt
+  - `backend/src/lib/llm.js` — Anthropic API wrapper, reads model config from env
+  - `POST /api/readwise/generate` — fetches article + highlights, calls LLM, removes tag, returns `{ title, content, notes }`
+  - `Readwise.svelte` — Post button wired: full-page overlay, creates draft, opens editor on success, per-row error + retry on failure
+  - 51 backend tests, 86 frontend tests, all passing
 
 ## Next
 
-- Phase 3: AI draft generation — `POST /api/readwise/generate`, `backend/src/lib/llm.js`
+- Phase 4: Archive — `DELETE /api/readwise/articles/:id/tag`
 
 ## Implementation Phases
 
 1. ✅ **Navigation refactor** — `Nav.svelte`, view state in `App.svelte`
 2. ✅ **Readwise article list** — `GET /api/readwise/articles`, `GET /api/readwise/articles/:id/highlights`, `Readwise.svelte`
-3. **AI draft generation** — `POST /api/readwise/generate`, llm.js abstraction
+3. ✅ **AI draft generation** — `POST /api/readwise/generate`, `backend/src/lib/llm.js`
 4. **Archive** — `DELETE /api/readwise/articles/:id/tag`
 
 Full details in PLAN.md.
