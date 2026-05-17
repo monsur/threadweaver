@@ -27,7 +27,6 @@ async function fetchAllArticles(apiKey, tag) {
 
   do {
     const url = new URL('https://readwise.io/api/v3/list');
-    url.searchParams.set('category', 'article');
     url.searchParams.set('tag', tag);
     url.searchParams.set('sort', '-created_at');
     if (cursor) url.searchParams.set('pageCursor', cursor);
