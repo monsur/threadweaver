@@ -30,8 +30,8 @@ console.log(JSON.stringify(s1.body, null, 2));
 console.log('\n── Strategy 2: v3 document detail ─────────────────────────────');
 const s2 = await rw(`https://readwise.io/api/v3/list?id=${DOC_ID}`);
 console.log(`Status: ${s2.status}`);
+console.log(JSON.stringify(s2.body, null, 2));  // full body — highlights may be extra results
 const doc = s2.body.results?.[0];
-console.log(JSON.stringify(doc, null, 2));
 
 if (doc?.source_url) {
   // Strategy 3: v2 highlights by source_url
