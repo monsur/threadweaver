@@ -1,6 +1,7 @@
 {
   "name": "threadweaver",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "concurrently \"cd frontend && npm run dev\" \"cd backend && npm run dev\"",
     "test": "npm run test --prefix frontend && npx playwright test",
