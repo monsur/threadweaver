@@ -7,7 +7,6 @@
  */
 
 const API_KEY = process.env.READWISE_API_KEY;
-const TAG = process.env.READWISE_TAG;
 
 if (!API_KEY) {
   console.error('Error: READWISE_API_KEY env var is required');
@@ -16,7 +15,7 @@ if (!API_KEY) {
 
 const url = new URL('https://readwise.io/api/v3/list');
 // url.searchParams.set('category', 'article');  // remove to see all types
-// url.searchParams.set('tag', TAG);   // server-side filter — unreliable
+url.searchParams.set('tag', 'bluesky');   // server-side filter — unreliable
 
 const res = await fetch(url.toString(), {
   headers: { Authorization: `Token ${API_KEY}` },
