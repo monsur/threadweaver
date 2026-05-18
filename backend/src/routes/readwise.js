@@ -57,26 +57,6 @@ export async function handleReadwise(request, env) {
     }
   }
 
-  // GET /api/readwise/articles/:id/highlights
-  const highlightsMatch = pathname.match(/^\/api\/readwise\/articles\/([^/]+)\/highlights$/);
-  if (highlightsMatch && method === 'GET') {
-    const id = highlightsMatch[1];
-    try {
-      // ⚠️ v3 IDs are UUIDs; v2 book_id is numeric — verify this mapping during testing.
-      // Fallback: filter by source_url if book_id doesn't match.
-      const res = await readwiseFetch(
-        `https://readwise.io/api/v2/highlights/?book_id=${encodeURIComponent(id)}&page_size=100`,
-        env.READWISE_API_KEY,
-      ).catch(() => null);
-      if (!res) return json({ highlights: [] });
-      const data = await res.json();
-      const highlights = (data.results ?? []).map(h => h.text);
-      return json({ highlights });
-    } catch {
-      return json({ highlights: [] });
-    }
-  }
-
   // POST /api/readwise/generate
   if (pathname === '/api/readwise/generate' && method === 'POST') {
     let body;

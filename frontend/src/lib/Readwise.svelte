@@ -7,12 +7,8 @@
   let loading = $state(true);
   let error = $state(null);
 
-  // per-article state: undefined = not fetched, null = fetching, array = fetched
-  let highlights = $state({});
-  let expanded = $state({});
-
-  let generating = $state(null);   // article id currently being generated
-  let postErrors = $state({});     // article id -> true if last Post failed
+  let generating = $state(null);
+  let postErrors = $state({});
 
   async function loadArticles() {
     loading = true;
@@ -26,21 +22,6 @@
       error = true;
     } finally {
       loading = false;
-    }
-  }
-
-  async function toggleExpand(id) {
-    expanded[id] = !expanded[id];
-    if (expanded[id] && highlights[id] === undefined) {
-      highlights[id] = null;
-      try {
-        const res = await fetch(`/api/readwise/articles/${id}/highlights`, { credentials: 'include' });
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        highlights[id] = data.highlights ?? [];
-      } catch {
-        highlights[id] = [];
-      }
     }
   }
 
@@ -97,16 +78,6 @@
     {#each articles as article (article.id)}
       <li class="py-3">
         <div class="flex items-center gap-2">
-          <!-- expand arrow -->
-          <button
-            class="text-slate-500 hover:text-slate-300 w-5 flex-shrink-0 transition-colors"
-            onclick={() => toggleExpand(article.id)}
-            aria-label={expanded[article.id] ? 'Collapse' : 'Expand'}
-            disabled={generating === article.id}
-          >
-            {#if expanded[article.id]}▼{:else}▶{/if}
-          </button>
-
           <!-- title -->
           <a
             href={article.url}
@@ -130,9 +101,8 @@
           </div>
         </div>
 
-        <!-- per-row post error -->
         {#if postErrors[article.id]}
-          <div class="ml-7 mt-1 flex items-center gap-2">
+          <div class="mt-1 flex items-center gap-2">
             <p class="text-red-400 text-xs">Failed to generate. </p>
             <button
               class="text-xs text-purple-400 hover:text-purple-300 underline"
@@ -140,24 +110,8 @@
             >Retry</button>
           </div>
         {/if}
-
-        <!-- highlights -->
-        {#if expanded[article.id]}
-          <div class="ml-7 mt-2">
-            {#if highlights[article.id] === null}
-              <p class="text-slate-500 text-xs">Loading highlights…</p>
-            {:else if highlights[article.id]?.length === 0}
-              <p class="text-slate-500 text-xs">No highlights</p>
-            {:else}
-              <ul class="space-y-1">
-                {#each highlights[article.id] as hl}
-                  <li class="text-slate-400 text-xs before:content-['•'] before:mr-2">{hl}</li>
-                {/each}
-              </ul>
-            {/if}
-          </div>
-        {/if}
       </li>
     {/each}
   </ul>
 {/if}
+
