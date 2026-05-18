@@ -21,6 +21,25 @@ async function readwiseFetch(url, apiKey, retries = 3) {
   }
 }
 
+async function fetchAllHighlights(apiKey) {
+  const map = {};
+  let cursor = null;
+  do {
+    const url = new URL('https://readwise.io/api/v3/list');
+    url.searchParams.set('category', 'highlight');
+    if (cursor) url.searchParams.set('pageCursor', cursor);
+    const res = await readwiseFetch(url.toString(), apiKey);
+    const data = await res.json();
+    for (const doc of (data.results ?? [])) {
+      if (!doc.parent_id || !doc.content) continue;
+      if (!map[doc.parent_id]) map[doc.parent_id] = [];
+      map[doc.parent_id].push(doc.content);
+    }
+    cursor = data.nextPageCursor ?? null;
+  } while (cursor);
+  return map;
+}
+
 async function fetchAllArticles(apiKey, tag) {
   const articles = [];
   let cursor = null;
@@ -45,6 +64,17 @@ async function fetchAllArticles(apiKey, tag) {
 export async function handleReadwise(request, env) {
   const { pathname } = new URL(request.url);
   const method = request.method;
+
+  // GET /api/readwise/highlights
+  if (pathname === '/api/readwise/highlights' && method === 'GET') {
+    try {
+      const highlights = await fetchAllHighlights(env.READWISE_API_KEY);
+      return json({ highlights });
+    } catch (err) {
+      console.error('[readwise] highlights fetch failed:', err?.message ?? err);
+      return json({ error: 'Failed to fetch highlights from Readwise' }, 502);
+    }
+  }
 
   // GET /api/readwise/articles
   if (pathname === '/api/readwise/articles' && method === 'GET') {

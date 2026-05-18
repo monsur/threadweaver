@@ -7,6 +7,10 @@
   let loading = $state(true);
   let error = $state(null);
 
+  // null = still loading, object = ready (may be empty)
+  let highlightsMap = $state(null);
+  let expanded = $state({});
+
   let generating = $state(null);
   let postErrors = $state({});
 
@@ -22,6 +26,17 @@
       error = true;
     } finally {
       loading = false;
+    }
+  }
+
+  async function loadHighlights() {
+    try {
+      const res = await fetch('/api/readwise/highlights', { credentials: 'include' });
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data = await res.json();
+      highlightsMap = data.highlights ?? {};
+    } catch {
+      highlightsMap = {};
     }
   }
 
@@ -49,6 +64,7 @@
   }
 
   loadArticles();
+  loadHighlights();
 </script>
 
 <!-- full-page loading overlay -->
@@ -78,6 +94,13 @@
     {#each articles as article (article.id)}
       <li class="py-3">
         <div class="flex items-center gap-2">
+          <!-- expand arrow -->
+          <button
+            aria-label={expanded[article.id] ? 'Collapse' : 'Expand'}
+            onclick={() => { expanded[article.id] = !expanded[article.id]; }}
+            class="text-slate-500 hover:text-slate-300 text-xs w-4 flex-shrink-0 transition-colors"
+          >{expanded[article.id] ? '▼' : '▶'}</button>
+
           <!-- title -->
           <a
             href={article.url}
@@ -101,6 +124,28 @@
           </div>
         </div>
 
+        {#if expanded[article.id]}
+          <div class="mt-2 pl-5">
+            {#if highlightsMap === null}
+              <span class="text-slate-500 text-xs" data-testid="highlights-loading">Loading…</span>
+            {:else}
+              {@const articleHighlights = highlightsMap[article.id] ?? []}
+              {#if articleHighlights.length === 0}
+                <span class="text-slate-500 text-xs">No highlights</span>
+              {:else}
+                <ul class="space-y-1">
+                  {#each articleHighlights as highlight}
+                    <li class="text-slate-400 text-xs flex gap-1">
+                      <span aria-hidden="true">•</span>
+                      <span>{highlight}</span>
+                    </li>
+                  {/each}
+                </ul>
+              {/if}
+            {/if}
+          </div>
+        {/if}
+
         {#if postErrors[article.id]}
           <div class="mt-1 flex items-center gap-2">
             <p class="text-red-400 text-xs">Failed to generate. </p>
@@ -114,4 +159,3 @@
     {/each}
   </ul>
 {/if}
-

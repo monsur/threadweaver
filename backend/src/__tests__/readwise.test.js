@@ -80,6 +80,11 @@ const makeDoc = (id, title = `Article ${id}`) => ({
   tags: { bluesky: { name: 'bluesky' } },
 });
 
+const makeHighlight = (parentId, content) => ({
+  id: `hl-${parentId}`, parent_id: parentId, category: 'highlight', content,
+  url: null, title: null, author: null, tags: {}, source_url: null, notes: '',
+});
+
 // ── GET /api/readwise/articles ────────────────────────────────────────────────
 
 describe('GET /api/readwise/articles', () => {
@@ -117,44 +122,51 @@ describe('GET /api/readwise/articles', () => {
   });
 });
 
-// ── GET /api/readwise/articles/:id/highlights ─────────────────────────────────
+// ── GET /api/readwise/highlights ─────────────────────────────────────────────
 
-describe('GET /api/readwise/articles/:id/highlights', () => {
+describe('GET /api/readwise/highlights', () => {
   test('returns 401 with no session cookie', async () => {
-    const res = await worker.fetch(req('/api/readwise/articles/abc/highlights'), env);
+    const res = await worker.fetch(req('/api/readwise/highlights'), env);
     expect(res.status).toBe(401);
   });
 
-  test('returns array of highlight text strings on success', async () => {
+  test('returns empty object when no highlights exist', async () => {
+    mockReadwiseFetch([{ json: articlePage([]) }]);
+    const res = await worker.fetch(await authedReq('/api/readwise/highlights'), env);
+    expect(res.status).toBe(200);
+    const { highlights } = await res.json();
+    expect(highlights).toEqual({});
+  });
+
+  test('returns highlights grouped by parent_id', async () => {
     mockReadwiseFetch([{
-      json: {
-        count: 2,
-        results: [
-          { id: 1, text: 'First highlight', book_id: 'abc' },
-          { id: 2, text: 'Second highlight', book_id: 'abc' },
-        ],
-      },
+      json: articlePage([
+        makeHighlight('doc-1', 'First point'),
+        makeHighlight('doc-1', 'Second point'),
+        makeHighlight('doc-2', 'Other article point'),
+      ]),
     }]);
-    const res = await worker.fetch(await authedReq('/api/readwise/articles/abc/highlights'), env);
+    const res = await worker.fetch(await authedReq('/api/readwise/highlights'), env);
     expect(res.status).toBe(200);
     const { highlights } = await res.json();
-    expect(highlights).toEqual(['First highlight', 'Second highlight']);
+    expect(highlights['doc-1']).toEqual(['First point', 'Second point']);
+    expect(highlights['doc-2']).toEqual(['Other article point']);
   });
 
-  test('returns empty array when Readwise v2 returns no results', async () => {
-    mockReadwiseFetch([{ json: { count: 0, results: [] } }]);
-    const res = await worker.fetch(await authedReq('/api/readwise/articles/abc/highlights'), env);
-    expect(res.status).toBe(200);
+  test('follows pagination cursors to collect all highlights', async () => {
+    mockReadwiseFetch([
+      { json: articlePage([makeHighlight('doc-1', 'Page one highlight')], 'cursor1') },
+      { json: articlePage([makeHighlight('doc-1', 'Page two highlight')]) },
+    ]);
+    const res = await worker.fetch(await authedReq('/api/readwise/highlights'), env);
     const { highlights } = await res.json();
-    expect(highlights).toEqual([]);
+    expect(highlights['doc-1']).toEqual(['Page one highlight', 'Page two highlight']);
   });
 
-  test('returns empty array when Readwise v2 call fails', async () => {
-    mockReadwiseFetch([{ ok: false, status: 404, json: {} }]);
-    const res = await worker.fetch(await authedReq('/api/readwise/articles/abc/highlights'), env);
-    expect(res.status).toBe(200);
-    const { highlights } = await res.json();
-    expect(highlights).toEqual([]);
+  test('returns 502 when Readwise API fails', async () => {
+    mockReadwiseFetch([{ ok: false, status: 500, json: {} }]);
+    const res = await worker.fetch(await authedReq('/api/readwise/highlights'), env);
+    expect(res.status).toBe(502);
   });
 });
 
