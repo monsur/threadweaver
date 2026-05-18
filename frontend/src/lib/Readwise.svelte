@@ -48,7 +48,7 @@
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ article_id: article.id }),
+        body: JSON.stringify({ article_id: article.id, highlights: highlightsMap?.[article.id] ?? [] }),
       });
       if (!res.ok) throw new Error();
       const { title, content, notes } = await res.json();

@@ -1,7 +1,7 @@
 # Status
 
 **Status:** Active <!-- Active | Paused | Blocked | Done -->
-**Updated:** 2026-05-09
+**Updated:** 2026-05-17
 
 ## Summary
 
@@ -9,12 +9,11 @@ A new page inside Threadweaver that lists Readwise-tagged articles, generates Bl
 
 ## Last Session
 
-- Implemented Phase 3: AI draft generation
-  - `backend/src/prompts/generate-thread.txt` — editable system prompt
-  - `backend/src/lib/llm.js` — Anthropic API wrapper, reads model config from env
-  - `POST /api/readwise/generate` — fetches article + highlights, calls LLM, removes tag, returns `{ title, content, notes }`
-  - `Readwise.svelte` — Post button wired: full-page overlay, creates draft, opens editor on success, per-row error + retry on failure
-  - 51 backend tests, 86 frontend tests, all passing
+- Implemented highlights expand/collapse via bulk prefetch
+  - `GET /api/readwise/highlights` — paginates v3 `category=highlight`, returns `{ [parent_id]: string[] }` map
+  - Articles and highlights now fetch in parallel on page load; expand arrow shows spinner until highlights arrive
+  - Replaced stale per-article v2 highlights approach (v3 UUIDs don't map to v2 book IDs)
+  - 52 backend tests, 87 frontend tests, all passing
 
 ## Next
 
@@ -23,7 +22,7 @@ A new page inside Threadweaver that lists Readwise-tagged articles, generates Bl
 ## Implementation Phases
 
 1. ✅ **Navigation refactor** — `Nav.svelte`, view state in `App.svelte`
-2. ✅ **Readwise article list** — `GET /api/readwise/articles`, `GET /api/readwise/articles/:id/highlights`, `Readwise.svelte`
+2. ✅ **Readwise article list** — `GET /api/readwise/articles`, `GET /api/readwise/highlights` (bulk prefetch), `Readwise.svelte` with expand/collapse
 3. ✅ **AI draft generation** — `POST /api/readwise/generate`, `backend/src/lib/llm.js`
 4. **Archive** — `DELETE /api/readwise/articles/:id/tag`
 

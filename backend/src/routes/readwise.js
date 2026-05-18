@@ -91,7 +91,7 @@ export async function handleReadwise(request, env) {
   if (pathname === '/api/readwise/generate' && method === 'POST') {
     let body;
     try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
-    const { article_id } = body ?? {};
+    const { article_id, highlights = [] } = body ?? {};
     if (!article_id) return json({ error: 'Missing article_id' }, 400);
 
     // Fetch article details
@@ -103,14 +103,6 @@ export async function handleReadwise(request, env) {
     const articleData = await articleRes.json();
     const doc = articleData.results?.[0];
     if (!doc) return json({ error: 'Article not found' }, 404);
-
-    // Fetch highlights (best-effort)
-    const hlRes = await readwiseFetch(
-      `https://readwise.io/api/v2/highlights/?book_id=${encodeURIComponent(article_id)}&page_size=100`,
-      env.READWISE_API_KEY,
-    ).catch(() => null);
-    const hlData = hlRes ? await hlRes.json() : { results: [] };
-    const highlights = (hlData.results ?? []).map(h => h.text);
 
     // Generate thread — if this fails, abort without touching the tag
     let content;

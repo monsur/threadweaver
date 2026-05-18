@@ -52,8 +52,8 @@ function mockReadwiseFetch(responses) {
 }
 
 // Dispatches fetch mocks by URL pattern for multi-call routes (generate)
-function mockGenerateFetch({ doc, highlights = [], llmText = 'post one\n\n\npost two', patchOk = true } = {}) {
-  vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url, opts) => {
+function mockGenerateFetch({ doc, llmText = 'post one\n\n\npost two', patchOk = true } = {}) {
+  vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url) => {
     const u = String(url);
     if (u.includes('api.anthropic.com')) {
       return { ok: true, json: async () => ({ content: [{ type: 'text', text: llmText }] }) };
@@ -63,9 +63,6 @@ function mockGenerateFetch({ doc, highlights = [], llmText = 'post one\n\n\npost
     }
     if (u.includes('/api/v3/list')) {
       return { ok: true, json: async () => ({ results: doc ? [doc] : [] }) };
-    }
-    if (u.includes('/api/v2/highlights')) {
-      return { ok: true, json: async () => ({ results: highlights.map((text, i) => ({ id: i, text })) }) };
     }
     return { ok: false, status: 404, json: async () => ({}) };
   }));
@@ -181,8 +178,11 @@ describe('POST /api/readwise/generate', () => {
   });
 
   test('returns { title, content, notes } and calls PATCH to remove tag on success', async () => {
-    const fetchMock = mockGenerateFetch({ doc, highlights: ['Highlight one', 'Highlight two'] });
-    const res = await worker.fetch(await authedReq('/api/readwise/generate', 'POST', { article_id: 'doc-1' }), env);
+    mockGenerateFetch({ doc });
+    const res = await worker.fetch(
+      await authedReq('/api/readwise/generate', 'POST', { article_id: 'doc-1', highlights: ['Highlight one', 'Highlight two'] }),
+      env,
+    );
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.title).toBe('Great Article');
@@ -194,8 +194,11 @@ describe('POST /api/readwise/generate', () => {
   });
 
   test('notes contains source URL and formatted highlight list', async () => {
-    mockGenerateFetch({ doc, highlights: ['Point A', 'Point B'] });
-    const res = await worker.fetch(await authedReq('/api/readwise/generate', 'POST', { article_id: 'doc-1' }), env);
+    mockGenerateFetch({ doc });
+    const res = await worker.fetch(
+      await authedReq('/api/readwise/generate', 'POST', { article_id: 'doc-1', highlights: ['Point A', 'Point B'] }),
+      env,
+    );
     const { notes } = await res.json();
     expect(notes).toBe('Source: https://example.com/1\n\nHighlights:\n- Point A\n- Point B');
   });
@@ -205,10 +208,12 @@ describe('POST /api/readwise/generate', () => {
       const u = String(url);
       if (u.includes('api.anthropic.com')) return { ok: false, status: 500, json: async () => ({}) };
       if (u.includes('/api/v3/list'))      return { ok: true, json: async () => ({ results: [doc] }) };
-      if (u.includes('/api/v2/highlights')) return { ok: true, json: async () => ({ results: [] }) };
       return { ok: false, json: async () => ({}) };
     }));
-    const res = await worker.fetch(await authedReq('/api/readwise/generate', 'POST', { article_id: 'doc-1' }), env);
+    const res = await worker.fetch(
+      await authedReq('/api/readwise/generate', 'POST', { article_id: 'doc-1', highlights: [] }),
+      env,
+    );
     expect(res.status).toBe(500);
     const calls = vi.mocked(global.fetch).mock.calls.map(c => String(c[0]));
     expect(calls.some(u => u.includes('/api/v3/update'))).toBe(false);

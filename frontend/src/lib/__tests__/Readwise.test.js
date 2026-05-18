@@ -215,16 +215,27 @@ describe('Readwise Post button', () => {
   test('on success: calls createDraft, setActive, setView, and removes article', async () => {
     const { createDraft, setActive } = await import('../stores/drafts.svelte.js');
     const setView = vi.fn();
-
-    mockFetch({
-      articles: { json: { articles: makeArticles('Article A') } },
-      generate: { json: { title: 'Article A', content: 'thread', notes: 'notes' } },
+    const fetchMock = vi.fn().mockImplementation(async (url) => {
+      const u = String(url);
+      if (u.includes('/api/readwise/articles')) {
+        return { ok: true, json: async () => ({ articles: makeArticles('Article A') }) };
+      }
+      if (u.includes('/api/readwise/highlights')) {
+        return { ok: true, json: async () => ({ highlights: { 'id-0': ['A highlight'] } }) };
+      }
+      return { ok: true, json: async () => ({ title: 'Article A', content: 'thread', notes: 'notes' }) };
     });
+    vi.stubGlobal('fetch', fetchMock);
 
     render(Readwise, { setView });
     await waitFor(() => screen.getByText('Article A'));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2)); // articles + highlights
     await fireEvent.click(screen.getByText('Post'));
     await waitFor(() => expect(setView).toHaveBeenCalledWith('editor'));
+
+    const generateCall = fetchMock.mock.calls.find(c => String(c[0]).includes('/api/readwise/generate'));
+    const body = JSON.parse(generateCall[1].body);
+    expect(body.highlights).toEqual(['A highlight']);
 
     expect(createDraft).toHaveBeenCalledWith({ title: 'Article A', content: 'thread', notes: 'notes' });
     expect(setActive).toHaveBeenCalledWith('new-draft-id');
